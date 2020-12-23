@@ -1,39 +1,25 @@
-# tapo-p100-python
-Work in progress implementation of tapo protocol in python.
+# Plug P100
+This is a fork of original work of ...
 
+The means of this fork is to provide the library as PyPi package. 
+This is used also as core part of HomeAssistant integration for TP-Link P100 at following repo.
 
+# How to install
+```pip install plugp100```
 
-To do list
+# Code example
+```python
+from plugp100 import p100
 
-- [x] Handshake
-- [x] Encrypt data
-- [x] Login request
-- [x] Decrypt data
-- [x] Change state
+switch = p100.P100("<ip_address>")
+switch.handshake()
+switch.login_request("<username>", "<password>")
 
-# How to install it (Linux)
-1. Make venv: `python3 -m venv venv`
-2. Activate venv: `source venv/bin/activate`
-3. Install wheel: `pip install wheel`
-4. Install requirements `pip install -r req.txt`
+# change state of plug
+switch.change_state(1, "88-00-DE-AD-52-E1") # (0 -> off, 1 -> on)
 
-# How to install it (Windows)
-TODO
-
-# How to use it
-```
-usage: main.py [-h] TPLINK_EMAIL TPLINK_PASS ADDR STATE
-
-Change plug state.
-
-positional arguments:
-  TPLINK_EMAIL  Your TPLink account email
-  TPLINK_PASS   Your TPLink account password
-  ADDR          Address of your plug (ex. 192.168.2.22)
-  STATE         New state of the plug (on=1 off=0)
-
-optional arguments:
-  -h, --help    show this help message and exit
+# retrieve the state of plug
+is_on = switch.is_on()
+state = switch.get_state() # this retrieve a complete status
 ```
 
-Example: `python main.py email@gmail.com Password123 192.168.137.135 1`
