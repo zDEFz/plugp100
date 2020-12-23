@@ -8,7 +8,7 @@ with open('requirements.txt') as requirements_file:
 
 setup_args = dict(
     name='plugp100',
-    version='1.0',
+    version='2.0',
     description='Controller for TP-Link Tapo P100',
     long_description_content_type="text/markdown",
     long_description=README,
