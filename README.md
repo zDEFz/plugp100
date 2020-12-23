@@ -1,8 +1,7 @@
 # Plug P100
-This is a fork of original work of ...
+This is a fork of original work of [@K4CZP3R](https://github.com/K4CZP3R/tapo-p100-python)
 
-The means of this fork is to provide the library as PyPi package. 
-This is used also as core part of HomeAssistant integration for TP-Link P100 at following repo.
+The purpose of this fork is to provide the library as PyPi package. 
 
 # How to install
 ```pip install plugp100```
