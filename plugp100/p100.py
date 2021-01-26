@@ -8,6 +8,7 @@ from models.methods.handshake_method import HandshakeMethod
 from models.methods.set_device_info_method import SetDeviceInfoMethod
 from models.methods.get_device_info_method import GetDeviceInfoMethod
 from models.params.device_info_params import DeviceInfoParams
+from models.params.brightness_params import BrightnessParams
 from models.methods.secure_passthrough_method import SecurePassthroughMethod
 from http_client import Http
 from models.exceptions.ResponseErrorCodeNotZero import ResponseErrorCodeNotZero
@@ -19,9 +20,11 @@ import logging
 logger = logging.getLogger('root')
 
 class P100:
-    def __init__(self, address: str):
+    def __init__(self, address: str, username: str, password: str):
         
         self.address = address
+        self.username = username
+        self.password = password
         self.url = f"http://{address}/app"
         logger.debug(f"Device url is: {self.url}")
 
@@ -69,7 +72,16 @@ class P100:
         device_info_params = DeviceInfoParams()
         device_info_params.set_device_on(new_state_bool)
         logger.debug(f"Device info params: {jsons.dumps(device_info_params)}")
+        self.__send_device_info(device_info_params)
+    
+    def change_brightness(self, new_value: int, terminal_uuid: str):
+        logger.debug(f"Will change brightness to {new_value}")
+        brightness_params = BrightnessParams()
+        brightness_params.set_brightness(new_value)
+        logger.debug(f"Device brightness params: {jsons.dumps(brightness_params)}")
+        self.__send_device_info(brightness_params)
 
+    def __send_device_info(device_info_params):
         device_info_method = SetDeviceInfoMethod(device_info_params)
         device_info_method.set_request_time_milis(time())
         device_info_method.set_terminal_uuid(terminal_uuid)
@@ -125,20 +137,20 @@ class P100:
         logger.debug("Decoding handshake key...")
         self.tp_link_cipher = self.encryption.decode_handshake_key(resp_dict['result']['key'], self.key_pair)
 
-    def login_request(self, username: str, password: str):
-        logger.debug(f"Will login using username '{username[5:]}...'")
-        digest_username = self.encryption.sha_digest_username(username)
-        logger.debug(f"Username digest: ...{digest_username[:5]}")
+    def login_request(self):
+        logger.debug(f"Will login using username '{self.username[5:]}...'")
+        digest_username = self.encryption.sha_digest_username(self.username)
+        logger.debug(f"Username digest: ...{self.digest_username[:5]}")
 
         login_device_params = LoginDeviceParams()
-        login_device_params.set_password(helpers.mime_encoder(password.encode("UTF-8")))
+        login_device_params.set_password(helpers.mime_encoder(self.password.encode("UTF-8")))
         login_device_params.set_username(helpers.mime_encoder(digest_username.encode("UTF-8")))
 
-        l_ldp = jsons.dumps(login_device_params).replace(helpers.mime_encoder(password.encode("UTF-8")), "PASSWORD_REMOVED")
+        l_ldp = jsons.dumps(login_device_params).replace(helpers.mime_encoder(self.password.encode("UTF-8")), "PASSWORD_REMOVED")
         logger.debug(f"Login device params: {l_ldp}")
 
         login_device_method = LoginDeviceMethod(login_device_params)
-        l_ldm = jsons.dumps(login_device_method).replace(helpers.mime_encoder(password.encode("UTF-8")),"PASSWORD_REMOVED")
+        l_ldm = jsons.dumps(login_device_method).replace(helpers.mime_encoder(self.password.encode("UTF-8")),"PASSWORD_REMOVED")
         logger.debug(f"Login device method: {l_ldm}")
 
         ldm_encrypted = self.tp_link_cipher.encrypt(jsons.dumps(login_device_method))
@@ -164,6 +176,9 @@ class P100:
         logger.debug(f"Device inner response: {decrypted_inner_response}")
 
         self.token = decrypted_inner_response['result']['token']
+
+    def set_brightness(self, brightness: int):
+
 
     def __generate_keypair(self):
         self.key_pair = self.encryption.generate_key_pair()
