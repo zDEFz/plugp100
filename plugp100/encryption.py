@@ -1,6 +1,6 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
-from models.key_pair import KeyPair
+from plugp100.core.key_pair import KeyPair
 from tp_link_cipher import TpLinkCipher
 import base64, hashlib, helpers, logging
 

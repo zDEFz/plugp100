@@ -1,4 +1,4 @@
-from models.methods import method
+from . import method
 from typing import Any
 
 
