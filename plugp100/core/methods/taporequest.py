@@ -1,4 +1,4 @@
-class Method(object):
+class TapoRequest(object):
     def __init__(self, method, params):
         self.method = method
         self.params = params
@@ -8,3 +8,9 @@ class Method(object):
 
     def get_method(self):
         return self.method
+
+    def set_request_time_milis(self, t: float):
+        self.requestTimeMils = t
+
+    def set_terminal_uuid(self, uuid: str):
+        self.terminalUUID = uuid

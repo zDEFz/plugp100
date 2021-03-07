@@ -4,7 +4,7 @@ if __name__ == "__main__":
     # create plug
     sw = TapoSwitch("<ip>", "<email>", "<passwd>")
     sw.login()
-    sw.off()
+    sw.on()
     print(sw.get_state())
 
     # create light
