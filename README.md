@@ -8,17 +8,18 @@ The purpose of this fork is to provide the library as PyPi package.
 
 # Code example
 ```python
-from plugp100 import p100
+from plugp100 import TapoSwitch, TapoLight
 
-switch = p100.P100("<ip_address>")
-switch.handshake()
-switch.login_request("<username>", "<password>")
+# create plug
+sw = TapoSwitch("<ip>", "<email>", "<passwd>")
+sw.login()
+sw.off()
+print(sw.get_state())
 
-# change state of plug
-switch.change_state(1, "88-00-DE-AD-52-E1") # (0 -> off, 1 -> on)
-
-# retrieve the state of plug
-is_on = switch.is_on()
-state = switch.get_state() # this retrieve a complete status
+# create light
+light = TapoLight("<ip>", "<email>", "<passwd>")
+light.login()
+light.on()
+light.set_brightness(100)
 ```
 
