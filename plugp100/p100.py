@@ -20,7 +20,7 @@ logger = logging.getLogger('root')
 
 class P100:
     def __init__(self, address: str):
-        
+
         self.address = address
         self.url = f"http://{address}/app"
         logger.debug(f"Device url is: {self.url}")
@@ -43,7 +43,7 @@ class P100:
         request_body = jsons.loads(jsons.dumps(secure_passthrough_method))
         logger.debug(f"Request body: {request_body}")
 
-        
+
         response = Http.make_post_cookie(f"{self.url}?token={self.token}", request_body,
                                          {'TP_SESSIONID':self.cookie_token})
         resp_dict: dict = response.json()
@@ -74,7 +74,7 @@ class P100:
         device_info_method.set_request_time_milis(time())
         device_info_method.set_terminal_uuid(terminal_uuid)
         logger.debug(f"Device info method: {jsons.dumps(device_info_method)}")
-        
+
         dim_encrypted = self.tp_link_cipher.encrypt(jsons.dumps(device_info_method))
         logger.debug(f"Device info method encrypted: {dim_encrypted}")
 
@@ -83,7 +83,7 @@ class P100:
         request_body = jsons.loads(jsons.dumps(secure_passthrough_method))
         logger.debug(f"Request body: {request_body}")
 
-        
+
         response = Http.make_post_cookie(f"{self.url}?token={self.token}", request_body,
                                          {'TP_SESSIONID':self.cookie_token})
         resp_dict: dict = response.json()
@@ -102,7 +102,7 @@ class P100:
 
         logger.debug("Generating keypair")
         self.__generate_keypair()
-        
+
         handshake_params = HandshakeParams()
         handshake_params.set_key(self.key_pair.get_public_key())
         logger.debug(f"Handshake params: {jsons.dumps(handshake_params)}")
@@ -138,6 +138,7 @@ class P100:
         logger.debug(f"Login device params: {l_ldp}")
 
         login_device_method = LoginDeviceMethod(login_device_params)
+        login_device_method.set_request_time_milis(time())
         l_ldm = jsons.dumps(login_device_method).replace(helpers.mime_encoder(password.encode("UTF-8")),"PASSWORD_REMOVED")
         logger.debug(f"Login device method: {l_ldm}")
 
@@ -160,7 +161,7 @@ class P100:
                 resp_dict['result']['response']
                 )
             )
-        
+
         logger.debug(f"Device inner response: {decrypted_inner_response}")
 
         self.token = decrypted_inner_response['result']['token']

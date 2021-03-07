@@ -6,3 +6,6 @@ class LoginDeviceMethod(method.Method):
         super().__init__("login_device", params)
         self.requestTimeMils = 0
 
+    def set_request_time_milis(self, t: float):
+        self.requestTimeMils = t
+
