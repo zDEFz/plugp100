@@ -80,6 +80,7 @@ class TapoApi:
         logger.debug(f"Login device params: {l_ldp}")
 
         login_device_method = LoginDeviceMethod(login_device_params)
+        login_device_method.set_request_time_milis(time())
         l_ldm = jsons.dumps(login_device_method).replace(helpers.mime_encoder(password.encode("UTF-8")),
                                                          "PASSWORD_REMOVED")
         logger.debug(f"Login device method: {l_ldm}")
