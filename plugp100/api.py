@@ -1,3 +1,4 @@
+import base64
 import dataclasses
 import logging
 from time import time
@@ -5,26 +6,41 @@ from typing import Any, Dict
 
 import jsons
 
-from plugp100 import helpers
-from plugp100.core.methods.set_device_info_method import SetDeviceInfoMethod
-from plugp100.core.params.device_info_params import DeviceInfoParams
-from plugp100.encryption import Encryption
-from plugp100.http_client import Http
+from plugp100.core import helpers
+from plugp100.core.encryption import Encryption
 from plugp100.core.exceptions import TapoException
+from plugp100.core.exceptions.TapoException import TapoException
+from plugp100.core.http_client import Http
 from plugp100.core.key_pair import KeyPair
 from plugp100.core.methods import GetDeviceInfoMethod
 from plugp100.core.methods import HandshakeMethod
 from plugp100.core.methods import LoginDeviceMethod
 from plugp100.core.methods import SecurePassthroughMethod
+from plugp100.core.methods.set_device_info_method import SetDeviceInfoMethod
 from plugp100.core.params import HandshakeParams
 from plugp100.core.params import LoginDeviceParams
-from plugp100.tp_link_cipher import TpLinkCipher
-from plugp100.core.exceptions.TapoException import TapoException
+from plugp100.core.params.device_info_params import DeviceInfoParams
+from plugp100.core.tp_link_cipher import TpLinkCipher
 
 logger = logging.getLogger(__name__)
 
 
+@dataclasses.dataclass
+class TapoDeviceState:
+    nickname: str = property(lambda self: base64.b64decode(self.state["nickname"]).decode("UTF-8"))
+    model: str = property(lambda self: self.state["model"])
+    type: str = property(lambda self: self.state["type"])
+    device_on: bool = property(lambda self: self.state["device_on"])
+    overheated: bool = property(lambda self: self.state["overheated"])
+    signal_level: int = property(lambda self: self.state["signal_level"])
+    rssi: int = property(lambda self: self.state["rssi"])
+
+    def __init__(self, state: Dict[str, Any]):
+        self.state = state
+
+
 class TapoApi:
+    TERMINAL_UUID = "88-00-DE-AD-52-E1"
 
     def __init__(self, address: str):
         self.address = address
@@ -38,7 +54,14 @@ class TapoApi:
 
         self.tp_link_cipher: TpLinkCipher = None
 
-    def handshake(self):
+    def login(self, username: str, password: str):
+        self._handshake()
+        self._login_request(username, password)
+
+    def get_state(self) -> TapoDeviceState:
+        return TapoDeviceState(self._get_state())
+
+    def _handshake(self):
         logger.debug("Will perform handshaking...")
 
         logger.debug("Generating keypair")
@@ -65,7 +88,7 @@ class TapoApi:
         logger.debug("Decoding handshake key...")
         self.tp_link_cipher = self.encryption.decode_handshake_key(resp_dict['result']['key'], self.key_pair)
 
-    def login_request(self, username: str, password: str):
+    def _login_request(self, username: str, password: str):
         logger.debug(f"Will login using username '{username[5:]}...'")
         digest_username = self.encryption.sha_digest_username(username)
         logger.debug(f"Username digest: ...{digest_username[:5]}")
@@ -109,7 +132,7 @@ class TapoApi:
 
         self.token = decrypted_inner_response['result']['token']
 
-    def get_state(self) -> Dict[str, Any]:
+    def _get_state(self) -> Dict[str, Any]:
         device_info_method = GetDeviceInfoMethod(None)
         logger.debug(f"Device info method: {jsons.dumps(device_info_method)}")
         dim_encrypted = self.tp_link_cipher.encrypt(jsons.dumps(device_info_method))
@@ -136,7 +159,7 @@ class TapoApi:
 
         return decrypted_inner_response['result']
 
-    def set_device_info(self, device_params: DeviceInfoParams, terminal_uuid: str):
+    def set_device_info(self, device_params: DeviceInfoParams, terminal_uuid: str = TERMINAL_UUID):
         logger.debug(f"Device info will change to: {device_params}")
 
         device_info_method = SetDeviceInfoMethod(device_params.as_dict())

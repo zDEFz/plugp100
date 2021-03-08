@@ -1,14 +1,16 @@
-from plugp100.p100 import TapoSwitch, TapoLight
+from plugp100 import TapoApi
+from plugp100.core.params import SwitchParams, LightParams
 
 if __name__ == "__main__":
-    # create plug
-    sw = TapoSwitch("<ip>", "<email>", "<passwd>")
-    sw.login()
-    sw.on()
+    # create generic tapo api
+    sw = TapoApi("<ip>")
+    sw.login("<email>", "<passwd>")
+    sw.set_device_info(SwitchParams(True))
+    sw.set_device_info(LightParams(None, 100))
     print(sw.get_state())
 
-    # create light
-    light = TapoLight("<ip>", "<email>", "<passwd>")
-    light.login()
-    light.on()
-    light.set_brightness(100)
+    # create specific switch or light
+    # sw = TapoSwitch("<ip>", "<email>", "<passwd>")
+    # sw.on()
+    # lg = TapoLight("<ip>", "<email>", "<passwd>")
+    # lg.set_brightness(100)
