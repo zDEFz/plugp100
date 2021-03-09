@@ -1,11 +1,23 @@
-import requests
 from typing import Any
 
-class Http:
-    @staticmethod
-    def make_post(url, json: Any) -> requests.Response:
-        return requests.post(url, json=json)
+import aiohttp
+import requests
 
-    @staticmethod
-    def make_post_cookie(url, json, cookie) -> requests.Response:
-        return requests.post(url, json=json, cookies=cookie)
+
+class AsyncHttp:
+
+    def __init__(self, session: aiohttp.ClientSession):
+        self.session = session
+
+    async def async_make_post(self, url, json: Any) -> aiohttp.ClientResponse:
+        async with self.session.post(url, json=json) as response:
+            return await self._force_read_release(response)
+
+    async def async_make_post_cookie(self, url, json, cookie) -> aiohttp.ClientResponse:
+        async with self.session.post(url, json=json, cookies=cookie) as response:
+            return await self._force_read_release(response)
+
+    async def _force_read_release(self, response):
+        await response.read()
+        await response.release()
+        return response

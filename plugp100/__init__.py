@@ -4,13 +4,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from .api import TapoDeviceState, TapoApi
-from .device import TapoDevice, TapoSwitch, TapoLight
+from .api import TapoDeviceState, TapoApiClient
+from .core.params import SwitchParams, LightParams
 
 __all__ = [
-    "TapoApi",
+    "TapoApiClient",
     "TapoDeviceState",
-    "TapoDevice",
-    "TapoSwitch",
-    "TapoLight"
+    "SwitchParams",
+    "LightParams"
 ]
