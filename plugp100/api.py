@@ -2,7 +2,7 @@ import base64
 import dataclasses
 import logging
 from time import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import aiohttp
 import asyncio
@@ -35,6 +35,7 @@ class TapoDeviceState:
     model: str = property(lambda self: self.state["model"])
     type: str = property(lambda self: self.state["type"])
     device_on: bool = property(lambda self: self.state["device_on"])
+    brightness: Optional[int] = property(lambda self: self.state["brightness"] if "brightness" in self.state else None)
     overheated: bool = property(lambda self: self.state["overheated"])
     signal_level: int = property(lambda self: self.state["signal_level"])
     rssi: int = property(lambda self: self.state["rssi"])
