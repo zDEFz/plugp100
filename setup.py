@@ -20,7 +20,8 @@ setup_args = dict(
     url='https://github.com/petretiandrea/plugp100',
     download_url='https://github.com/petretiandrea/plugp100',
     classifiers=[
-        'Development Status :: 4 - Beta'
+        #'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable'
     ]
 )
 
