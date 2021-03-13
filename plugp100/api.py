@@ -70,9 +70,12 @@ class TapoApiClient:
         return TapoDeviceState(await self._get_state())
 
     async def set_device_info(self, device_params: DeviceInfoParams, terminal_uuid: str = TERMINAL_UUID):
+        await self._set_device_info(device_params.as_dict(), terminal_uuid)
+
+    async def _set_device_info(self, device_params: Dict[str, Any], terminal_uuid: str = TERMINAL_UUID):
         logger.debug(f"Device info will change to: {device_params}")
 
-        device_info_method = SetDeviceInfoMethod(device_params.as_dict())
+        device_info_method = SetDeviceInfoMethod(device_params)
         device_info_method.set_request_time_milis(time())
         device_info_method.set_terminal_uuid(terminal_uuid)
         logger.debug(f"Device info method: {jsons.dumps(device_info_method)}")
@@ -106,7 +109,13 @@ class TapoApiClient:
         return await self.set_device_info(SwitchParams(False))
 
     async def set_brightness(self, brightness: int):
-        return await self.set_device_info(LightParams(None, brightness))
+        return await self.set_device_info(LightParams(brightness=brightness))
+
+    async def set_color_temperature(self, color_temperature: int):
+        return await self.set_device_info(LightParams(color_temperature=color_temperature))
+
+    async def set_hue_saturation(self, hue: int, saturation: int):
+        return await self.set_device_info(LightParams(hue=hue, saturation=saturation))
 
     async def _handshake(self):
         logger.debug("Will perform handshaking...")
