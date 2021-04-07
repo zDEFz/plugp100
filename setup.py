@@ -8,7 +8,7 @@ with open('requirements.txt') as requirements_file:
 
 setup_args = dict(
     name='plugp100',
-    version='2.1.1',
+    version='2.1.5',
     description='Controller for TP-Link Tapo P100 and other devices',
     long_description_content_type="text/markdown",
     long_description=README,
@@ -18,7 +18,11 @@ setup_args = dict(
     author_email='petretiandrea@gmail.com',
     keywords=['Tapo', 'P100'],
     url='https://github.com/petretiandrea/plugp100',
-    download_url='https://github.com/petretiandrea/plugp100'
+    download_url='https://github.com/petretiandrea/plugp100',
+    classifiers=[
+        #'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable'
+    ]
 )
 
 install_requires = REQUIREMENTS

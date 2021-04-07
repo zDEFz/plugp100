@@ -7,19 +7,24 @@ The purpose of this fork is to provide the library as PyPi package.
 ```pip install plugp100```
 
 # Code example
+
 ```python
-from plugp100 import TapoSwitch, TapoLight
+import asyncio
+from plugp100 import TapoApiClient
 
-# create plug
-sw = TapoSwitch("<ip>", "<email>", "<passwd>")
-sw.login()
-sw.off()
-print(sw.get_state())
 
-# create light
-light = TapoLight("<ip>", "<email>", "<passwd>")
-light.login()
-light.on()
-light.set_brightness(100)
+async def main():
+    # create generic tapo api
+    sw = TapoApiClient("<ip>", "<email>", "<passwd>")
+    await sw.login()
+    await sw.on()
+    await sw.set_brightness(100)
+    print(await sw.get_state())
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+loop.run_until_complete(asyncio.sleep(0.1))
+loop.close()
+
 ```
 

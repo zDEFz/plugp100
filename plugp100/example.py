@@ -1,14 +1,17 @@
-from plugp100.p100 import TapoSwitch, TapoLight
+import asyncio
 
-if __name__ == "__main__":
-    # create plug
-    sw = TapoSwitch("<ip>", "<email>", "<passwd>")
-    sw.login()
-    sw.on()
-    print(sw.get_state())
+from plugp100 import TapoApiClient
 
-    # create light
-    light = TapoLight("<ip>", "<email>", "<passwd>")
-    light.login()
-    light.on()
-    light.set_brightness(100)
+
+async def main():
+    # create generic tapo api
+    sw = TapoApiClient("<ip>", "<email>", "<passwd>")
+    await sw.login()
+    await sw.on()
+    await sw.set_brightness(100)
+    print(await sw.get_state())
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+loop.run_until_complete(asyncio.sleep(0.1))
+loop.close()

@@ -19,3 +19,17 @@ class SwitchParams(DeviceInfoParams):
 @dataclass
 class LightParams(SwitchParams):
     brightness: Optional[int]
+    color_temp: Optional[int]
+    saturation: Optional[int]
+    hue: Optional[int]
+
+    def __init__(self,
+                 brightness: Optional[int] = None,
+                 color_temperature: Optional[int] = None,
+                 saturation: Optional[int] = None,
+                 hue: Optional[int] = None):
+        self.device_on = None
+        self.brightness = brightness
+        self.color_temp = color_temperature
+        self.saturation = saturation
+        self.hue = hue

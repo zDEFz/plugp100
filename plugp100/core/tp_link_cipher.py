@@ -1,8 +1,8 @@
-from Crypto import Random
-from Crypto.Cipher import AES
-import hashlib, helpers
-import pkcs7
 import base64
+
+import pkcs7
+from Crypto.Cipher import AES
+from . import helpers
 
 
 class TpLinkCipher:
@@ -15,7 +15,7 @@ class TpLinkCipher:
         data: str
         cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
         encrypted = cipher.encrypt(data.encode("UTF-8"))
-        return helpers.mime_encoder(encrypted).replace("\r\n","")
+        return helpers.mime_encoder(encrypted).replace("\r\n", "")
 
     def decrypt(self, data: str):
         aes = AES.new(self.key, AES.MODE_CBC, self.iv)

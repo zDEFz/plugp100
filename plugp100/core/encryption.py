@@ -1,10 +1,16 @@
-from Crypto.PublicKey import RSA
+import base64
+import hashlib
+import logging
+
 from Crypto.Cipher import PKCS1_v1_5
+from Crypto.PublicKey import RSA
+
 from plugp100.core.key_pair import KeyPair
-from tp_link_cipher import TpLinkCipher
-import base64, hashlib, helpers, logging
+from . import helpers
+from .tp_link_cipher import TpLinkCipher
 
 logger = logging.getLogger('root')
+
 
 class Encryption:
     def generate_key_pair(self) -> KeyPair:
@@ -33,8 +39,8 @@ class Encryption:
         if do_final is None:
             raise ValueError("Decryption failed!")
 
-        b_arr:bytearray = bytearray()
-        b_arr2:bytearray = bytearray()
+        b_arr: bytearray = bytearray()
+        b_arr2: bytearray = bytearray()
 
         for i in range(0, 16):
             b_arr.insert(i, do_final[i])
