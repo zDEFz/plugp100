@@ -70,7 +70,7 @@ class TapoApiClient:
         await self._login_request(self.username, self.password)
 
     async def get_state(self) -> TapoDeviceState:
-        return TapoDeviceState(await self._get_state())
+        return TapoDeviceState(await self.get_state_as_dict())
 
     async def set_device_info(self, device_params: DeviceInfoParams, terminal_uuid: str = TERMINAL_UUID):
         await self._set_device_info(device_params.as_dict(), terminal_uuid)
@@ -190,7 +190,7 @@ class TapoApiClient:
 
         self.token = decrypted_inner_response['result']['token']
 
-    async def _get_state(self) -> Dict[str, Any]:
+    async def get_state_as_dict(self) -> Dict[str, Any]:
         device_info_method = GetDeviceInfoMethod(None)
         logger.debug(f"Device info method: {jsons.dumps(device_info_method)}")
         dim_encrypted = self.tp_link_cipher.encrypt(jsons.dumps(device_info_method))
