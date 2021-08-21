@@ -15,10 +15,11 @@ from plugp100.core.exceptions import TapoException
 from plugp100.core.exceptions.TapoException import TapoException
 from plugp100.core.http_client import AsyncHttp
 from plugp100.core.key_pair import KeyPair
-from plugp100.core.methods import GetDeviceInfoMethod
+from plugp100.core.methods import GetDeviceInfoMethod, taporequest
 from plugp100.core.methods import HandshakeMethod
 from plugp100.core.methods import LoginDeviceMethod
 from plugp100.core.methods import SecurePassthroughMethod
+from plugp100.core.methods.get_energy_usage import GetEnergyUsageMethod
 from plugp100.core.methods.set_device_info_method import SetDeviceInfoMethod
 from plugp100.core.params import HandshakeParams
 from plugp100.core.params import LoginDeviceParams
@@ -192,9 +193,18 @@ class TapoApiClient:
 
     async def get_state_as_dict(self) -> Dict[str, Any]:
         device_info_method = GetDeviceInfoMethod(None)
-        logger.debug(f"Device info method: {jsons.dumps(device_info_method)}")
-        dim_encrypted = self.tp_link_cipher.encrypt(jsons.dumps(device_info_method))
-        logger.debug(f"Device info method encrypted: {dim_encrypted}")
+        return await self._execute_method_request(device_info_method)
+
+    async def get_energy_usage(self) -> Optional[Dict[str, Any]]:
+        try:
+            return await self._execute_method_request(GetEnergyUsageMethod(None))
+        except (Exception,):
+            return None
+
+    async def _execute_method_request(self, method: taporequest.TapoRequest) -> Dict[str, Any]:
+        logger.debug(f"Method request: {jsons.dumps(method)}")
+        dim_encrypted = self.tp_link_cipher.encrypt(jsons.dumps(method))
+        logger.debug(f"Method request encrypted: {dim_encrypted}")
 
         secure_passthrough_method = SecurePassthroughMethod(dim_encrypted)
         logger.debug(f"Secure passthrough method: {secure_passthrough_method}")
