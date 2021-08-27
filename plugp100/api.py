@@ -30,6 +30,18 @@ logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
+class EnergyInfo:
+    today_runtime: float = property(lambda self: self.info["today_runtime"])
+    month_runtime: float = property(lambda self: self.info["month_runtime"])
+    today_energy: float = property(lambda self: self.info["today_energy"])
+    month_energy: float = property(lambda self: self.info["month_energy"])
+    current_power: float = property(lambda self: self.info["current_power"])
+
+    def __init__(self, info: Dict[str, Any]):
+        self.info = info
+
+
+@dataclasses.dataclass
 class TapoDeviceState:
     device_id: str = property(lambda self: self.state["device_id"])
     nickname: str = property(lambda self: base64.b64decode(self.state["nickname"]).decode("UTF-8"))
@@ -43,9 +55,11 @@ class TapoDeviceState:
     overheated: bool = property(lambda self: self.state["overheated"])
     signal_level: int = property(lambda self: self.state["signal_level"])
     rssi: int = property(lambda self: self.state["rssi"])
+    energy_info: EnergyInfo = property(lambda self: self._energy_info)
 
-    def __init__(self, state: Dict[str, Any]):
+    def __init__(self, state: Dict[str, Any], energy_info: EnergyInfo):
         self.state = state
+        self._energy_info = energy_info
 
 
 class TapoApiClient:
@@ -71,7 +85,10 @@ class TapoApiClient:
         await self._login_request(self.username, self.password)
 
     async def get_state(self) -> TapoDeviceState:
-        return TapoDeviceState(await self.get_state_as_dict())
+        return TapoDeviceState(
+            state=await self.get_state_as_dict(),
+            energy_info=await self.get_energy_usage()
+        )
 
     async def set_device_info(self, device_params: DeviceInfoParams, terminal_uuid: str = TERMINAL_UUID):
         await self._set_device_info(device_params.as_dict(), terminal_uuid)
@@ -195,9 +212,11 @@ class TapoApiClient:
         device_info_method = GetDeviceInfoMethod(None)
         return await self._execute_method_request(device_info_method)
 
-    async def get_energy_usage(self) -> Optional[Dict[str, Any]]:
+    async def get_energy_usage(self) -> Optional[EnergyInfo]:
         try:
-            return await self._execute_method_request(GetEnergyUsageMethod(None))
+            return EnergyInfo(
+                await self._execute_method_request(GetEnergyUsageMethod(None))
+            )
         except (Exception,):
             return None
 
