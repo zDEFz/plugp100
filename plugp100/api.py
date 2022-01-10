@@ -5,8 +5,6 @@ from time import time
 from typing import Any, Dict, Optional
 
 import aiohttp
-import asyncio
-import async_timeout
 import jsons
 
 from plugp100.core import helpers
@@ -44,6 +42,7 @@ class EnergyInfo:
 @dataclasses.dataclass
 class TapoDeviceState:
     device_id: str = property(lambda self: self.state["device_id"])
+    mac: str = property(lambda self: self.state["mac"])
     nickname: str = property(lambda self: base64.b64decode(self.state["nickname"]).decode("UTF-8"))
     model: str = property(lambda self: self.state["model"])
     type: str = property(lambda self: self.state["type"])
