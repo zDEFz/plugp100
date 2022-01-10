@@ -1,4 +1,4 @@
-certifi==2020.6.20
+certifi==2021.10.8
 idna==2.10
 jsons==1.6.1
 pkcs7==0.1.2
