@@ -1,13 +1,24 @@
+import platform
+
 from setuptools import setup, find_packages
 
-from setup_utils import build_dependency_links
+
+def is_armv7() -> bool:
+    return platform.machine() in ("armv7l", "armv7")
+
+
+def requirements_filename_by_arch() -> str:
+    if is_armv7():
+        return f"requirements-armv7.txt"
+    else:
+        return "requirements.txt"
+
 
 with open('README.md') as readme_file:
     README = readme_file.read()
 
-with open('requirements.txt') as requirements_file:
+with open(requirements_filename_by_arch()) as requirements_file:
     REQUIREMENTS = requirements_file.read().split("\n")
-
 
 setup_args = dict(
     name='plugp100',
@@ -27,7 +38,6 @@ setup_args = dict(
         # 'Development Status :: 4 - Beta',
         'Development Status :: 5 - Production/Stable'
     ],
-    dependency_links=build_dependency_links()
 )
 
 if __name__ == '__main__':

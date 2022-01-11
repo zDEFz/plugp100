@@ -1,28 +1,33 @@
 # This workflows will upload a Python Package using Twine when a release is created
 # For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
 
-name: Test plugp100 library
+name: Release plugp100
 
 on:
   push:
     branches:
-      - "test-ci"
+      - test-ci
 
 jobs:
-  dependecies_job:
+  build_dependecy_wheels:
     runs-on: ubuntu-latest
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
 
     strategy:
       matrix:
-        include:
-          - arch: aarch64
-            distro: ubuntu20.04
-          - arch: armv7
-            distro: ubuntu20.04
+        arch: [armv7]
+        distro: [ubuntu20.04]
 
     steps:
       - uses: actions/checkout@v2.1.0
+      - uses: actions/cache@v2
+        name: "Cache pip wheels"
+        id: cache-pip-wheels
+        with:
+          path: |
+            ./wheels
+            ./.cache-pip
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-pip-wheels-${{ hashFiles('**/requirements.txt') }}
       - uses: uraimo/run-on-arch-action@v2.1.1
         name: "Test plugp100 dependencies"
         with:
@@ -34,8 +39,60 @@ jobs:
             apt-get install -y software-properties-common
             add-apt-repository ppa:deadsnakes/ppa
             apt-get install -y python3.9 python3.9-distutils curl
+            apt-get install -y python3.9-dev build-essential
+            apt-get install -y python3.9-venv
             curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
             python3.9 get-pip.py --user
           run: |
-            ls /root/.local/bin/
-            /root/.local/bin/pip3.9 install -r requirements.txt
+            export PATH=/root/.local/bin/:$PATH
+            export PIP_CACHE_DIR=./.cache-pip
+            [ -d ./.cache-pip ] && echo "Directory Exists" || mkdir ./.cache-pip
+            ls -Ra
+            python3.9 ci_build_wheels.py wheels https://github.com/petretiandrea/plugp100/raw/wheels/ ./.cache-pip
+            chmod 777 -R ./.cache-pip
+
+      - name: "Store artifacts"
+        uses: actions/upload-artifact@v2
+        with:
+          path: wheels/**
+
+  upload_wheels:
+    runs-on: ubuntu-latest
+    needs: [build_dependecy_wheels]
+
+    steps:
+      - name: "Download artifacts"
+        uses: actions/download-artifact@v2
+        with:
+          path: compiled-wheels/
+      - name: "Upload custom wheels"
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: wheels
+          FOLDER: compiled-wheels/artifact/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish_pypi:
+    runs-on: ubuntu-latest
+    needs: [build_dependecy_wheels]
+
+    steps:
+      - uses: actions/checkout@v2.1.0
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          python setup.py sdist
+          twine upload --repository testpypi dist/*
+
+# python setup.py sdist bdist_wheel (only sdist allow to resolve right arm dependency)
