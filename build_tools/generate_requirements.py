@@ -8,8 +8,8 @@ from ci_build_utils import get_compiled_requirements_from_ci, merge_requirements
 SUPPORTED_ARCHITECTURES = ["armv6l", "armv7l", "amd64", "aarch64", "x86"]
 
 
-def get_current_commit_sha(wheels_branch_folder: str) -> str:
-    return subprocess.check_output(f"git rev-parse HEAD", cwd=wheels_branch_folder, shell=True, text=True).strip()
+def get_current_wheels_commit_sha() -> str:
+    return subprocess.check_output(f"git rev-parse wheels", shell=True, text=True).strip()
 
 
 def get_compiled_architectures(wheels_branch_folder: str) -> [str]:
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         exit(-1)
 
     git_wheels_folder = sys.argv[1]
-    commit_sha = get_current_commit_sha(git_wheels_folder)
+    commit_sha = get_current_wheels_commit_sha()
 
     branch_url = f"{sys.argv[2]}{commit_sha}/"
     architectures = get_compiled_architectures(git_wheels_folder)

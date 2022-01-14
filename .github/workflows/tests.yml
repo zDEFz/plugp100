@@ -29,6 +29,7 @@ jobs:
             ./.cache-pip
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-pip-wheels-${{ hashFiles('**/requirements.txt') }}
       - uses: uraimo/run-on-arch-action@v2.1.1
+        if: steps.cache-pip-wheels.outputs.cache-hit != 'true'
         name: "Build wheels"
         with:
           arch: ${{ matrix.arch }}
@@ -51,6 +52,7 @@ jobs:
             python3.9 build_tools/build_wheels.py wheels ./.cache-pip
             chmod 777 -R ./.cache-pip
       - name: "Upload custom wheels"
+        if: steps.cache-pip-wheels.outputs.cache-hit != 'true'
         uses: s0/git-publish-subdir-action@develop
         env:
           REPO: self
@@ -95,6 +97,6 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           python setup.py sdist
-          twine upload --repository testpypi dist/*
+          twine upload dist/*
 
 # python setup.py sdist bdist_wheel (only sdist allow to resolve right arm dependency)
