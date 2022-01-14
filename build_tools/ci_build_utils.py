@@ -1,4 +1,5 @@
 import os
+import platform
 from typing import Optional
 
 
@@ -64,3 +65,11 @@ def get_requirement_name(requirement: str) -> str:
         return requirement.split("==")[0]
     else:
         return requirement
+
+
+def requirements_filename_by_arch() -> str:
+    requirements_file = f'requirements-{platform.machine().lower()}.txt'
+    if os.path.exists(requirements_file):
+        return requirements_file
+    else:
+        return 'requirements.txt'

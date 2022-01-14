@@ -29,7 +29,7 @@ jobs:
             ./.cache-pip
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-pip-wheels-${{ hashFiles('**/requirements.txt') }}
       - uses: uraimo/run-on-arch-action@v2.1.1
-        name: "Test plugp100 dependencies"
+        name: "Build wheels"
         with:
           arch: ${{ matrix.arch }}
           distro: ${{ matrix.distro }}
@@ -48,10 +48,9 @@ jobs:
             export PIP_CACHE_DIR=./.cache-pip
             [ -d ./.cache-pip ] && echo "Cache pip directory already exists" || mkdir ./.cache-pip
             chown root:root -R ./.cache-pip
-            python3.9 ci_build_wheels.py wheels https://github.com/petretiandrea/plugp100/raw/wheels/ ./.cache-pip
+            python3.9 build_tools/build_wheels.py wheels ./.cache-pip
             chmod 777 -R ./.cache-pip
-
-      - name: "Store artifacts"
+      - name: "Store wheels artifacts"
         uses: actions/upload-artifact@v2
         with:
           path: wheels/**
@@ -61,7 +60,8 @@ jobs:
     needs: [build_dependecy_wheels]
 
     steps:
-      - name: "Download artifacts"
+      - uses: actions/checkout@v2.1.0
+      - name: "Download wheels artifacts"
         uses: actions/download-artifact@v2
         with:
           path: compiled-wheels/
@@ -72,6 +72,17 @@ jobs:
           BRANCH: wheels
           FOLDER: compiled-wheels/artifact/
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: "Generating requirements*.txt"
+        run: |
+          python build_tools/generate_requirements.py compiled-wheels/artifact/ https://github.com/petretiandrea/plugp100/raw/
+      - name: "Store compiled requirements"
+        uses: actions/upload-artifact@v2
+        with:
+            name: compiled-requirements
+            path: requirements-*.txt
 
   publish_pypi:
     runs-on: ubuntu-latest
@@ -79,12 +90,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2.1.0
+      - name: "Retrieve compiled requirements"
+        uses: actions/download-artifact@v2
+        with:
+          name: compiled-requirements
+          path: ./
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
       - name: Install dependencies
         run: |
+          ls -R
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
       - name: Build and publish
