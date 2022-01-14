@@ -22,7 +22,7 @@ with open(requirements_filename_by_arch()) as requirements_file:
 
 setup_args = dict(
     name='plugp100',
-    version='2.1.10b3',
+    version='2.1.10b4',
     install_requires=REQUIREMENTS,
     description='Controller for TP-Link Tapo P100 and other devices',
     long_description_content_type="text/markdown",

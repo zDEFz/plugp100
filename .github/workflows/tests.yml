@@ -47,7 +47,6 @@ jobs:
             export PATH=/root/.local/bin/:$PATH
             export PIP_CACHE_DIR=./.cache-pip
             [ -d ./.cache-pip ] && echo "Cache pip directory already exists" || mkdir ./.cache-pip
-            ls -lat ./.cache-pip
             chown root:root -R ./.cache-pip
             python3.9 ci_build_wheels.py wheels https://github.com/petretiandrea/plugp100/raw/wheels/ ./.cache-pip
             chmod 777 -R ./.cache-pip
