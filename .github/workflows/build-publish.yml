@@ -19,7 +19,7 @@ jobs:
         distro: [ubuntu20.04]
 
     steps:
-      - uses: actions/checkout@v2.1.0
+      - uses: actions/checkout@v2.4.0
       - uses: actions/cache@v2
         name: "Cache pip wheels"
         id: cache-pip-wheels
@@ -77,7 +77,7 @@ jobs:
     needs: [build_dependecy_wheels]
 
     steps:
-      - uses: actions/checkout@v2.1.0
+      - uses: actions/checkout@v2.4.0
       - name: "Retrieve compiled requirements"
         uses: actions/download-artifact@v2
         with:
