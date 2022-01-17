@@ -27,7 +27,7 @@ jobs:
           path: |
             ./wheels
             ./.cache-pip
-          key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-pip-wheels-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-arch-wheels-${{ hashFiles('**/requirements.txt') }}
       - uses: uraimo/run-on-arch-action@v2.1.1
         if: steps.cache-pip-wheels.outputs.cache-hit != 'true'
         name: Build wheels for ${{ matrix.arch }}

@@ -20,8 +20,8 @@ with open('README.md') as readme_file:
     README = readme_file.read()
 
 with open(requirements_filename_by_arch()) as requirements_file:
-    COMPLIANT_PYPI_REQUIREMENTS = filter(lambda requirement: "http" not in requirement,
-                                         requirements_file.read().split("\n"))
+    COMPLIANT_PYPI_REQUIREMENTS = list(filter(lambda requirement: "http" not in requirement,
+                                              requirements_file.read().split("\n")))
 
 setup_args = dict(
     name='plugp100',
