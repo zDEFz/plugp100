@@ -1,6 +1,5 @@
 pkcs7
 pycryptodome
-aiohttp
 frozenlist
 multidict
 yarl
