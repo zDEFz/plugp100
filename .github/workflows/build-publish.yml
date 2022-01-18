@@ -47,6 +47,8 @@ jobs:
             apt-get install -y python3.9-venv
             curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
             python3.9 get-pip.py --user
+            export PATH=/root/.local/bin/:$PATH
+            python3.9 -m pip install packaging
           run: |
             export PATH=/root/.local/bin/:$PATH
             export PIP_CACHE_DIR=./.cache-pip
@@ -55,7 +57,7 @@ jobs:
             echo "Generate vendoring wheel..."
             python3.9 build_tools/build_vendoring.py ./plugp100/_vendor ./.cache-pip
             echo "Generate library wheel with the right platform name"
-            python3.9 build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
+            python3.9 build_tools/build_splatform_wheel.py ./plugp100/_vendor requirements.txt
             chmod 777 -R ./.cache-pip
 
       - name: "Upload generated wheel for ${{ matrix.distro }} ${{ matrix.arch }}"
