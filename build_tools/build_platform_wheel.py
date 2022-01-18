@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 import sys
+import packaging.tags
 
 from ci_build_utils import get_names_from_wheels, merge_requirements, \
     read_requirements_file, intersect_contains_string, delete_requirements
@@ -18,10 +19,10 @@ def get_build_platform() -> str:
     return get_platform().replace('-', '_').replace('.', '_')
 
 
-# def copy_wheel_to_vendor(wheel_file: str, vendor_folder: str):
-#     zi
+def get_interpreter_version() -> str:
+    return f'{packaging.tags.interpreter_name()}{packaging.tags.interpreter_version()}'
 
-# e.g. url = https://github.com/petretiandrea/plugp100/raw/
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("usage build_platform_wheel.py <vendor_folder> <requirements_file_name>")
@@ -30,6 +31,8 @@ if __name__ == "__main__":
     python_executable = sys.executable
     vendor_folder = sys.argv[1]
     new_requirements_file = sys.argv[2]
+
+    interpreter_implementation = get_interpreter_version()
 
     architecture = platform.machine().lower()
     requirements = read_requirements_file('requirements.txt')
@@ -46,5 +49,6 @@ if __name__ == "__main__":
     with open(new_requirements_file, 'w') as file:
         file.writelines('\n'.join(new_requirements))
 
-    os.system(f'{python_executable} setup.py bdist_wheel --plat-name={get_build_platform()}')
+    os.system(
+        f'{python_executable} setup.py bdist_wheel --plat-name={get_build_platform()} --python-tag={interpreter_implementation}')
     print("Done.")

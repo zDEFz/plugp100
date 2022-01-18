@@ -56,6 +56,7 @@ jobs:
             echo "Generate library wheel with the right platform name"
             python3.9 build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
             chmod 777 -R ./.cache-pip
+
       - name: "Upload generated wheel for ${{ matrix.distro }} ${{ matrix.arch }}"
         uses: actions/upload-artifact@v2
         with:
