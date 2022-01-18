@@ -29,7 +29,8 @@ jobs:
           path: |
             ./plugp100/_vendor
             ./.cache-pip
-          key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-vendor-cache-${{ hashFiles('**/requirements.txt') }}
+            ./requirements.txt
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-vendoring-${{ hashFiles('**/requirements.txt') }}
       - uses: uraimo/run-on-arch-action@v2.1.1
         if: steps.cache-pip-wheels.outputs.cache-hit != 'true'
         name: Build wheels for ${{ matrix.arch }}
