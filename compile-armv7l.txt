@@ -1,5 +1,0 @@
-pkcs7
-pycryptodome
-frozenlist
-multidict
-yarl
