@@ -1,0 +1,19 @@
+#!/bin/bash
+
+PYTHON_VERSION=$1
+
+apt-get update -y
+apt-get install -y software-properties-common
+add-apt-repository ppa:deadsnakes/ppa
+
+if [ "$PYTHON_VERSION" = "py39" ]; then
+    apt-get install -y build-essential curl python3.9 python3.9-distutils python3.9-dev python3.9-venv
+    python3.9 -m pip install packaging
+elif [ "$PYTHON_VERSION" = "py10" ]; then
+    apt-get install -y build-essential curl python3.10 python3.10-distutils python3.10-dev python3.10-venv
+    python3.10 -m pip install packaging
+fi
+
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py --user
+mv /root/.local/bin/* /usr/bin/

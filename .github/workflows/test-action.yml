@@ -1,0 +1,29 @@
+name: Release plugp100
+
+on:
+  push:
+    branches:
+      - test-ci
+      #    tags:
+#      - v*.*.*
+
+jobs:
+  test-actions:
+    runs-on: self-hosted
+    #runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Build python 3.9 on armv7l
+        uses: ./.github/actions/python-on-arch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          arch: 'armv7'
+          python: 'py39'
+          run: |
+            echo "Generate vendoring wheel..."
+            python build_tools/build_vendoring.py ./plugp100/_vendor ./.cache-pip
+            echo "Generate library wheel with the right platform name"
+            python build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt

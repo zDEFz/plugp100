@@ -1,0 +1,46 @@
+
+name: 'python-on-arch'
+description: 'Run python on specific architecture'
+inputs:
+  run:
+    required: true
+    description: 'Command to run on arch'
+  arch:
+    required: true
+    description: 'CPU architecture'
+  distro:
+    required: false
+    description: 'Distribution name, one of uraimo/run-on-arch-action'
+    default: "ubuntu20.04"
+  python:
+    required: false
+    default: 'py39'
+    description: 'A version of python, now supports "py39" and "py310"'
+  cache-dir:
+    required: false
+    default: './.cache-pip'
+    description: 'Pip cache folder'
+
+# ${{ github.action_path }} or $GITHUB_ACTION_PATH
+runs:
+  using: "composite"
+  steps:
+    - name: 'Prepare python install script'
+      shell: bash
+      id: install-script
+      run: |
+        sed 's/$1/${{ inputs.python }}/g' .github/actions/python-on-arch/install-python.sh > .github/actions/python-on-arch/install-python-${{ inputs.python }}.sh
+        echo ::set-output name=install::$(cat github/actions/python-on-arch/install-python-${{ inputs.python }}.sh)
+    - uses: uraimo/run-on-arch-action@v2.1.1
+      with:
+        arch: ${{ inputs.arch }}
+        distro: ${{ inputs.distro }}
+        githubToken: ${{ env.GITHUB_TOKEN }}
+        setup: [ -d ${{ inputs.cache-dir }} ] && echo "Cache pip directory already exists" || mkdir ${{ inputs.cache-dir }}
+        install: |
+          ${{ steps.install-script.outputs.script }}
+        run: |
+          export PIP_CACHE_DIR=${{ inputs.cache-dir }}
+          chown root:root -R ${{ inputs.cache-dir }}
+          ${{ inputs.run }}
+          chmod 777 -R ${{ inputs.cache-dir }}
