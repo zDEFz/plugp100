@@ -57,7 +57,7 @@ jobs:
             echo "Generate vendoring wheel..."
             python3.9 build_tools/build_vendoring.py ./plugp100/_vendor ./.cache-pip
             echo "Generate library wheel with the right platform name"
-            python3.9 build_tools/build_splatform_wheel.py ./plugp100/_vendor requirements.txt
+            python3.9 build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
             chmod 777 -R ./.cache-pip
 
       - name: "Upload generated wheel for ${{ matrix.distro }} ${{ matrix.arch }}"
