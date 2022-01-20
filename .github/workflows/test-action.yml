@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         arch: [armv7]
-        python: [py3.9]
+        python: [py3.9, py3.10]
 
     steps:
       - name: Check out repository
@@ -25,8 +25,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          arch: 'armv7'
-          python: 'py3.9'
+          arch: ${{ matrix.arch }}
+          python: ${{ matrix.python }}
           run: |
             python --version
             echo "Generate vendoring wheel..."
