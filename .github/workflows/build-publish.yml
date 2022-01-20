@@ -6,7 +6,8 @@ name: Release plugp100
 on:
   push:
     branches:
-      - test-ci
+      - no-run
+      #- test-ci
       #    tags:
 #      - v*.*.*
 

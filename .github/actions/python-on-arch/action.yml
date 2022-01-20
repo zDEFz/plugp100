@@ -8,14 +8,10 @@ inputs:
   arch:
     required: true
     description: 'CPU architecture'
-  distro:
-    required: false
-    description: 'Distribution name, one of uraimo/run-on-arch-action'
-    default: "ubuntu20.04"
   python:
     required: false
-    default: 'py39'
-    description: 'A version of python, now supports "py39" and "py310"'
+    default: 'py3.9'
+    description: 'A version of python, now supports "py3.9" and "py3.10"'
   cache-dir:
     required: false
     default: './.cache-pip'
@@ -25,22 +21,48 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: 'Prepare python install script'
+    - name: 'Prepare run script'
       shell: bash
       id: install-script
       run: |
-        sed 's/$1/${{ inputs.python }}/g' .github/actions/python-on-arch/install-python.sh > .github/actions/python-on-arch/install-python-${{ inputs.python }}.sh
-        echo ::set-output name=install::$(cat github/actions/python-on-arch/install-python-${{ inputs.python }}.sh)
-    - uses: uraimo/run-on-arch-action@v2.1.1
+        cat << EOF >> ./run.sh
+        export PIP_CACHE_DIR=${{ inputs.cache-dir }}
+        [ -d ${{ inputs.cache-dir }} ] && echo "Cache pip directory already exists" || mkdir ${{ inputs.cache-dir }}
+        chown root:root -R ${{ inputs.cache-dir }}
+        python -m pip install packaging
+        ${{ inputs.run }}
+        chmod 777 -R ${{ inputs.cache-dir }}
+        EOF
+        chmod +x ./run.sh
+        cat ./run.sh
+    - uses: actions/cache@v2
+      name: "Cache pip wheels"
+      id: cache-pip-wheels
       with:
-        arch: ${{ inputs.arch }}
-        distro: ${{ inputs.distro }}
-        githubToken: ${{ env.GITHUB_TOKEN }}
-        setup: [ -d ${{ inputs.cache-dir }} ] && echo "Cache pip directory already exists" || mkdir ${{ inputs.cache-dir }}
-        install: |
-          ${{ steps.install-script.outputs.script }}
-        run: |
-          export PIP_CACHE_DIR=${{ inputs.cache-dir }}
-          chown root:root -R ${{ inputs.cache-dir }}
-          ${{ inputs.run }}
-          chmod 777 -R ${{ inputs.cache-dir }}
+        path: ${{ inputs.cache-dir }}
+        key: ${{ runner.os }}-${{ inputs.python }}-${{ inputs.arch }}-on-arch-${{ hashFiles('**/run.sh') }}
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+      with:
+        image: tonistiigi/binfmt:latest
+        platforms: all
+    - name: Run python on docker
+      shell: bash
+      id: run-python
+      run: |
+        chmod +x .github/actions/python-on-arch/run-python-on.sh
+        source .github/actions/python-on-arch/run-python-on.sh ${{ inputs.python }}
+
+        echo "::set-output name=python-container::$$PYTHON_CONTAINER"
+
+        docker exec $PYTHON_CONTAINER bash ./run.sh
+
+        docker stop $PYTHON_CONTAINER
+        docker rm $PYTHON_CONTAINER
+
+    - name: Clean docker python container
+      if: ${{ failure() }}
+      shell: bash
+      run: |
+        docker stop ${{ steps.run-python.outputs.python-container }}
+        docker rm ${{ steps.run-python.outputs.python-container }}

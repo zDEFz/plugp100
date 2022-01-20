@@ -9,21 +9,32 @@ on:
 
 jobs:
   test-actions:
-    runs-on: self-hosted
-    #runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+    name: Build on ${{ matrix.arch }} with ${{ matrix.python }}
+
+    strategy:
+      matrix:
+        arch: [armv7]
+        python: [py3.9]
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-      - name: Build python 3.9 on armv7l
+      - name: Build wheels for ${{ matrix.python }} on ${{ matrix.arch }}
         uses: ./.github/actions/python-on-arch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           arch: 'armv7'
-          python: 'py39'
+          python: 'py3.9'
           run: |
+            python --version
             echo "Generate vendoring wheel..."
             python build_tools/build_vendoring.py ./plugp100/_vendor ./.cache-pip
             echo "Generate library wheel with the right platform name"
             python build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
+      - name: "Upload generated wheel for ${{ matrix.python }} ${{ matrix.arch }}"
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheel
+          path: dist/*
