@@ -3,7 +3,6 @@ Script to build wheels which are unavailable from PyPi, caused by unsupported cp
 """
 
 import os
-import platform
 import sys
 
 from ci_build_utils import read_requirements_file, \
