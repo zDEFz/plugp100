@@ -5,7 +5,7 @@ name: Release plugp100
 
 on:
   release:
-    tyes: [published]
+    types: [published]
 #    tags:
 #      - v*.*.*
 
