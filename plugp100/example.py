@@ -15,3 +15,6 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
 loop.run_until_complete(asyncio.sleep(0.1))
 loop.close()
+
+if __name__ == "__main__":
+    main()

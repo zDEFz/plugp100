@@ -5,33 +5,27 @@ from typing import Optional
 
 def read_requirements_file(filename: str) -> [str]:
     with open(filename) as file:
-        return file.read().split("\n")
+        return file.read().strip().split("\n")
 
 
-def get_compiled_requirements_from_ci(folder: str, base_url: str) -> [str]:
+def get_names_from_wheels(folder: str) -> [str]:
     """ Generate a list like requirements.txt file of CI compiled wheels.
     @param folder: The folder where compiled wheels are.
-    @param base_url: The base url to access to wheels folder
-    @return: A list of pip dependencies which point to base_url
-
-    Example:
-        pkcs7@https://base_url/pkcs7-0.1.2-py3-none-any.whl
+    @return: A list of pip dependencies names
     """
     wheel_files = os.listdir(folder)
-    return [get_wheel_from_filename(os.path.basename(wheel_file), base_url) for wheel_file in wheel_files]
+    return [get_name_from_wheel(os.path.basename(wheel_file)) for wheel_file in wheel_files]
 
 
-def get_wheel_from_filename(filename: str, base_url: str) -> str:
+def get_name_from_wheel(wheel_filename: str) -> str:
     """
     Extract wheel requirement from filename
-    @param filename: The file of a whl
-    @param base_url: The base url to access to this .whl file
-    @return: A pip compliant requirements <library_name>@<url>/**.whl.
+    @param wheel_filename: The file of a whl
+    @return: The requirement name of wheel.
 
-    Like pkcs7@https://base_url/pkcs7-0.1.2-py3-none-any.whl
+    Example: pkcs7-0.1.2-py3-none-any.whl return pkcs7
     """
-    requirement_name = filename.split("-")[0]
-    return f"{requirement_name}@{base_url}{filename}"
+    return wheel_filename.split("-")[0]
 
 
 def merge_requirements(requirements: [str], to_merge_requirements: [str]) -> [str]:
@@ -46,6 +40,13 @@ def merge_requirements(requirements: [str], to_merge_requirements: [str]) -> [st
         to_merge = find_contains_substring(get_requirement_name(requirement), to_merge_requirements)
         merged.append(to_merge if to_merge is not None else requirement)
     return merged
+
+
+def delete_requirements(requirements: [str], to_remove: [str]) -> [str]:
+    return list(filter(
+        lambda req: find_contains_substring(req, to_remove) is None,
+        requirements
+    ))
 
 
 def find_contains_substring(substring: str, strings: [str]) -> Optional[str]:

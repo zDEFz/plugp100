@@ -1,0 +1,68 @@
+
+name: 'python-on-arch'
+description: 'Run python on specific architecture'
+inputs:
+  run:
+    required: true
+    description: 'Command to run on arch'
+  arch:
+    required: true
+    description: 'CPU architecture'
+  python:
+    required: false
+    default: 'py3.9'
+    description: 'A version of python, now supports "py3.9" and "py3.10"'
+  cache-dir:
+    required: false
+    default: './.cache-pip'
+    description: 'Pip cache folder'
+
+# ${{ github.action_path }} or $GITHUB_ACTION_PATH
+runs:
+  using: "composite"
+  steps:
+    - name: 'Prepare run script'
+      shell: bash
+      id: install-script
+      run: |
+        cat << EOF >> ./run.sh
+        export PIP_CACHE_DIR=${{ inputs.cache-dir }}
+        [ -d ${{ inputs.cache-dir }} ] && echo "Cache pip directory already exists" || mkdir ${{ inputs.cache-dir }}
+        chown root:root -R ${{ inputs.cache-dir }}
+        python -m pip install packaging
+        ${{ inputs.run }}
+        chmod 777 -R ${{ inputs.cache-dir }}
+        EOF
+        chmod +x ./run.sh
+        cat ./run.sh
+    - uses: actions/cache@v2
+      name: "Cache pip wheels"
+      id: cache-pip-wheels
+      with:
+        path: ${{ inputs.cache-dir }}
+        key: ${{ runner.os }}-${{ inputs.python }}-${{ inputs.arch }}-on-arch-${{ hashFiles('**/run.sh') }}
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+      with:
+        image: tonistiigi/binfmt:latest
+        platforms: all
+    - name: Run python on docker
+      shell: bash
+      id: run-python
+      run: |
+        chmod +x .github/actions/python-on-arch/run-python-on.sh
+        source .github/actions/python-on-arch/run-python-on.sh ${{ inputs.python }}
+
+        echo "::set-output name=python-container::$PYTHON_CONTAINER"
+
+        docker exec $PYTHON_CONTAINER bash ./run.sh
+
+        docker stop $PYTHON_CONTAINER
+        docker rm $PYTHON_CONTAINER
+
+    - name: Clean docker python container
+      if: ${{ failure() }}
+      shell: bash
+      run: |
+        docker stop ${{ steps.run-python.outputs.python-container }}
+        docker rm ${{ steps.run-python.outputs.python-container }}

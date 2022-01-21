@@ -4,85 +4,58 @@
 name: Release plugp100
 
 on:
-  push:
-    tags:
-      - v*.*.*
+  release:
+    tyes: [published]
+#    tags:
+#      - v*.*.*
 
 jobs:
-  build_dependecy_wheels:
+  build_vendoring_wheels:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
-    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+    name: Build on ${{ matrix.arch }} with ${{ matrix.python }}
 
     strategy:
       matrix:
         arch: [armv7]
-        distro: [ubuntu20.04]
+        python: [py3.9, py3.10]
 
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/cache@v2
-        name: "Cache pip wheels"
-        id: cache-pip-wheels
-        with:
-          path: |
-            ./wheels
-            ./.cache-pip
-          key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.distro }}-arch-wheels-${{ hashFiles('**/requirements.txt') }}
-      - uses: uraimo/run-on-arch-action@v2.1.1
-        if: steps.cache-pip-wheels.outputs.cache-hit != 'true'
-        name: Build wheels for ${{ matrix.arch }}
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Build wheels for ${{ matrix.python }} on ${{ matrix.arch }}
+        uses: ./.github/actions/python-on-arch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           arch: ${{ matrix.arch }}
-          distro: ${{ matrix.distro }}
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          install: |
-            apt-get update -y
-            apt-get install -y software-properties-common
-            add-apt-repository ppa:deadsnakes/ppa
-            apt-get install -y python3.9 python3.9-distutils curl
-            apt-get install -y python3.9-dev build-essential
-            apt-get install -y python3.9-venv
-            curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-            python3.9 get-pip.py --user
+          python: ${{ matrix.python }}
           run: |
-            export PATH=/root/.local/bin/:$PATH
-            export PIP_CACHE_DIR=./.cache-pip
-            [ -d ./.cache-pip ] && echo "Cache pip directory already exists" || mkdir ./.cache-pip
-            chown root:root -R ./.cache-pip
-            python3.9 build_tools/build_wheels.py wheels ./.cache-pip
-            chmod 777 -R ./.cache-pip
-      - name: "Pushing wheels to repository"
-        if: steps.cache-pip-wheels.outputs.cache-hit != 'true'
-        uses: s0/git-publish-subdir-action@develop
-        env:
-          REPO: self
-          BRANCH: wheels
-          FOLDER: wheels/
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: "Generating requirements.txt for ${{ matrix.arch }}"
-        run: |
-          python build_tools/generate_requirements.py wheels/ https://github.com/petretiandrea/plugp100/raw/
-      - name: "Uploading compiled requirements"
+            python --version
+            echo "Generate vendoring wheel..."
+            python build_tools/build_vendoring.py ./plugp100/_vendor ./.cache-pip
+            echo "Generate library wheel with the right platform name"
+            python build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
+      - name: "Upload generated wheel for ${{ matrix.python }} ${{ matrix.arch }}"
         uses: actions/upload-artifact@v2
         with:
-          name: compiled-requirements
-          path: requirements-*.txt
+          name: wheel
+          path: dist/*
+
 
   publish_pypi:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     name: Publish to PyPi
     runs-on: ubuntu-latest
-    needs: [build_dependecy_wheels]
+    needs: [ build_vendoring_wheels ]
 
     steps:
       - uses: actions/checkout@v2.4.0
       - name: "Retrieve compiled requirements"
         uses: actions/download-artifact@v2
         with:
-          name: compiled-requirements
-          path: ./
+          name: wheel
+          path: ./dist
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -91,6 +64,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
+      - name: Generating Any and Source Distribution
+        run: |
+          python setup.py sdist bdist_wheel
+          ls -R
       - name: Publish source distribution to PyPi
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -98,5 +75,3 @@ jobs:
         run: |
           python setup.py sdist
           twine upload dist/*
-
-# python setup.py sdist bdist_wheel (only sdist allow to resolve right arm dependency)
