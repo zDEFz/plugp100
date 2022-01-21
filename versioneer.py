@@ -1,4 +1,3 @@
-
 # Version: 0.21
 
 """The Versioneer - like a rocketeer, but for versions.
@@ -372,10 +371,12 @@ HANDLERS: Dict[str, Dict[str, Callable]] = {}
 
 def register_vcs_handler(vcs, method):  # decorator
     """Create decorator to mark a method as the handler of a VCS."""
+
     def decorate(f):
         """Store f in HANDLERS[vcs][method]."""
         HANDLERS.setdefault(vcs, {})[method] = f
         return f
+
     return decorate
 
 
@@ -1473,7 +1474,7 @@ def render_pep440_pre(pieces):
             tag_version, post_version = pep440_split_post(pieces["closest-tag"])
             rendered = tag_version
             if post_version is not None:
-                rendered += ".post%d.dev%d" % (post_version+1, pieces["distance"])
+                rendered += ".post%d.dev%d" % (post_version + 1, pieces["distance"])
             else:
                 rendered += ".post0.dev%d" % (pieces["distance"])
         else:
@@ -1603,6 +1604,26 @@ def render_git_describe_long(pieces):
     return rendered
 
 
+def render_pypi(pieces) -> str:
+    """Build up version string, with post-release "local version identifier".
+
+        Our goal: TAG[+DISTANCE.gHEX[.dirty]] . Note that if you
+        get a tagged build and then dirty it, you'll get TAG+0.gHEX.dirty
+
+        Exceptions:
+        1: no tags. git_describe was just HEX. 0+untagged.DISTANCE.gHEX[.dirty]
+        """
+    if pieces["closest-tag"]:
+        rendered = pieces["closest-tag"]
+    else:
+        # exception #1
+        rendered = "0+untagged.%d.g%s" % (pieces["distance"],
+                                          pieces["short"])
+        if pieces["dirty"]:
+            rendered += ".dirty"
+    return rendered
+
+
 def render(pieces, style):
     """Render the given version pieces into the requested style."""
     if pieces["error"]:
@@ -1631,6 +1652,8 @@ def render(pieces, style):
         rendered = render_git_describe(pieces)
     elif style == "git-describe-long":
         rendered = render_git_describe_long(pieces)
+    elif style == "pypi":
+        rendered = render_pypi(pieces)
     else:
         raise ValueError("unknown style '%s'" % style)
 
@@ -1769,6 +1792,7 @@ def get_cmdclass(cmdclass=None):
             print(" date: %s" % vers.get("date"))
             if vers["error"]:
                 print(" error: %s" % vers["error"])
+
     cmds["version"] = cmd_version
 
     # we override "build_py" in both distutils and setuptools
@@ -1807,6 +1831,7 @@ def get_cmdclass(cmdclass=None):
                                                   cfg.versionfile_build)
                 print("UPDATING %s" % target_versionfile)
                 write_to_version_file(target_versionfile, versions)
+
     cmds["build_py"] = cmd_build_py
 
     if 'build_ext' in cmds:
@@ -1834,6 +1859,7 @@ def get_cmdclass(cmdclass=None):
                                               cfg.versionfile_build)
             print("UPDATING %s" % target_versionfile)
             write_to_version_file(target_versionfile, versions)
+
     cmds["build_ext"] = cmd_build_ext
 
     if "cx_Freeze" in sys.modules:  # cx_freeze enabled?
@@ -1865,6 +1891,7 @@ def get_cmdclass(cmdclass=None):
                              "PARENTDIR_PREFIX": cfg.parentdir_prefix,
                              "VERSIONFILE_SOURCE": cfg.versionfile_source,
                              })
+
         cmds["build_exe"] = cmd_build_exe
         del cmds["build_py"]
 
@@ -1891,6 +1918,7 @@ def get_cmdclass(cmdclass=None):
                              "PARENTDIR_PREFIX": cfg.parentdir_prefix,
                              "VERSIONFILE_SOURCE": cfg.versionfile_source,
                              })
+
         cmds["py2exe"] = cmd_py2exe
 
     # we override different "sdist" commands for both environments
@@ -1921,6 +1949,7 @@ def get_cmdclass(cmdclass=None):
             print("UPDATING %s" % target_versionfile)
             write_to_version_file(target_versionfile,
                                   self._versioneer_generated_versions)
+
     cmds["sdist"] = cmd_sdist
 
     return cmds
