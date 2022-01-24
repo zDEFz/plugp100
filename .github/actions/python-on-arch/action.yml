@@ -40,7 +40,7 @@ runs:
       id: cache-pip-wheels
       with:
         path: ${{ inputs.cache-dir }}
-        key: ${{ runner.os }}-${{ inputs.python }}-${{ inputs.arch }}-on-arch-${{ hashFiles('**/run.sh') }}
+        key: ${{ runner.os }}-${{ inputs.python }}-${{ inputs.arch }}-on-arch-${{ hashFiles('**/run.sh', '**/requirements.txt', '**/vendor-armv7l.txt') }}
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
       with:
