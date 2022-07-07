@@ -33,6 +33,7 @@ if __name__ == "__main__":
     new_requirements_file = sys.argv[2]
 
     interpreter_implementation = get_interpreter_version()
+    print(f"Intr impl {interpreter_implementation}")
 
     architecture = platform.machine().lower()
     requirements = read_requirements_file('requirements.txt')

@@ -6,6 +6,9 @@ name: Release plugp100
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - fix/support-arm64
 #    tags:
 #      - v*.*.*
 
@@ -17,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        arch: [armv7]
+        arch: [armv7, arm64]
         python: [py3.9, py3.10]
 
     steps:
