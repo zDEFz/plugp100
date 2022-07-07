@@ -6,18 +6,21 @@ import os
 import sys
 import platform
 
+import packaging.tags
+
 from ci_build_utils import read_requirements_file, \
     intersect_contains_string, get_requirement_name
 
 REQUIREMENTS = read_requirements_file('requirements.txt')
 
 
-def get_requirements_to_compile(requirements: [str]) -> [str]:
-    compile_file = f'vendor-armv7l.txt'
+def get_requirements_to_compile(requirements: [str], arch: str) -> [str]:
+    compile_file = f'vendor-{arch}txt'
     if os.path.exists(compile_file):
         return intersect_contains_string(requirements, read_requirements_file(compile_file))
     else:
         return []
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -28,17 +31,23 @@ if __name__ == "__main__":
     vendor_wheels_folder = sys.argv[1]
     pip_cache_dir = sys.argv[2] if len(sys.argv) > 2 else None
 
+    # python version 38, 39, 310
+    interpreter_version = packaging.tags.interpreter_version()
+    # e.g. cp
+    interpreter_name = packaging.tags.interpreter_name()
+
     print(f"""Detected {current_arch}.\nUsing vendor folder: {vendor_wheels_folder}.\n""")
 
     print(f"Extracting requirements to compile.")
-    requirements_to_compile = get_requirements_to_compile(REQUIREMENTS)
+    requirements_to_compile = get_requirements_to_compile(REQUIREMENTS, current_arch)
 
     if len(requirements_to_compile) > 0:
         print(f"Found {len(requirements_to_compile)} wheels to compile.")
         print("Building wheels...")
         cache_dir_command = f'--cache-dir {pip_cache_dir}' if pip_cache_dir else ''
+        implementation_abi = f'--implementation {interpreter_name} --python-version {interpreter_version}'
         for requirement in requirements_to_compile:
             vendor_requirement_folder = os.path.join(vendor_wheels_folder, get_requirement_name(requirement))
-            os.system(f"pip install {requirement} -t {vendor_requirement_folder} {cache_dir_command}")
+            os.system(f"pip install {requirement} -t {vendor_requirement_folder} {implementation_abi} {cache_dir_command}")
     else:
         print('No requirements to vendor found.')
