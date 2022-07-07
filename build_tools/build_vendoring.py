@@ -3,10 +3,8 @@ Script to build wheels which are unavailable from PyPi, caused by unsupported cp
 """
 
 import os
-import sys
 import platform
-
-import packaging.tags
+import sys
 
 from ci_build_utils import read_requirements_file, \
     intersect_contains_string, get_requirement_name
@@ -15,7 +13,7 @@ REQUIREMENTS = read_requirements_file('requirements.txt')
 
 
 def get_requirements_to_compile(requirements: [str], arch: str) -> [str]:
-    compile_file = f'vendor-{arch}txt'
+    compile_file = f'vendor-{arch}.txt'
     if os.path.exists(compile_file):
         return intersect_contains_string(requirements, read_requirements_file(compile_file))
     else:
@@ -31,11 +29,6 @@ if __name__ == "__main__":
     vendor_wheels_folder = sys.argv[1]
     pip_cache_dir = sys.argv[2] if len(sys.argv) > 2 else None
 
-    # python version 38, 39, 310
-    interpreter_version = packaging.tags.interpreter_version()
-    # e.g. cp
-    interpreter_name = packaging.tags.interpreter_name()
-
     print(f"""Detected {current_arch}.\nUsing vendor folder: {vendor_wheels_folder}.\n""")
 
     print(f"Extracting requirements to compile.")
@@ -45,9 +38,9 @@ if __name__ == "__main__":
         print(f"Found {len(requirements_to_compile)} wheels to compile.")
         print("Building wheels...")
         cache_dir_command = f'--cache-dir {pip_cache_dir}' if pip_cache_dir else ''
-        implementation_abi = f'--implementation {interpreter_name} --python-version {interpreter_version}'
+        compile_wheels = f'--no-binary :all:'
         for requirement in requirements_to_compile:
             vendor_requirement_folder = os.path.join(vendor_wheels_folder, get_requirement_name(requirement))
-            os.system(f"pip install {requirement} -t {vendor_requirement_folder} {implementation_abi} {cache_dir_command}")
+            os.system(f"pip install {requirement} -t {vendor_requirement_folder} {compile_wheels} {cache_dir_command}")
     else:
         print('No requirements to vendor found.')
