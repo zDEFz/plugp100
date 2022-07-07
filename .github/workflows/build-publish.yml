@@ -20,11 +20,8 @@ jobs:
 
     strategy:
       matrix:
-        arch: [arm64]
+        arch: [armv7, arm64]
         python: [py3.9, py3.10]
-
-        #arch: [armv7, arm64]
-        #python: [py3.9, py3.10]
 
     steps:
       - name: Check out repository
