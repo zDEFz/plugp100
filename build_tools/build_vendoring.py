@@ -4,6 +4,7 @@ Script to build wheels which are unavailable from PyPi, caused by unsupported cp
 
 import os
 import sys
+import platform
 
 from ci_build_utils import read_requirements_file, \
     intersect_contains_string, get_requirement_name
@@ -18,13 +19,12 @@ def get_requirements_to_compile(requirements: [str]) -> [str]:
     else:
         return []
 
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("usage build_vendoring.py <vendor_folder> <pip_cache_folder>")
         exit(-1)
 
-    current_arch = "armv7l"
+    current_arch = platform.machine().lower()
     vendor_wheels_folder = sys.argv[1]
     pip_cache_dir = sys.argv[2] if len(sys.argv) > 2 else None
 

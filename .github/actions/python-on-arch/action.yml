@@ -51,7 +51,7 @@ runs:
       id: run-python
       run: |
         chmod +x .github/actions/python-on-arch/run-python-on.sh
-        source .github/actions/python-on-arch/run-python-on.sh ${{ inputs.python }}
+        source .github/actions/python-on-arch/run-python-on.sh ${{ inputs.python }} ${{ inputs.arch }}
 
         echo "::set-output name=python-container::$PYTHON_CONTAINER"
 
