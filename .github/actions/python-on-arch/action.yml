@@ -10,7 +10,7 @@ inputs:
     description: 'CPU architecture'
   python:
     required: false
-    default: 'py3.9'
+    default: 'python3.9'
     description: 'A version of python, now supports "py3.9" and "py3.10"'
   cache-dir:
     required: false

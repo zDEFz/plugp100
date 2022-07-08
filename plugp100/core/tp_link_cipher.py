@@ -1,8 +1,8 @@
 import base64
 
-import pkcs7
 from Crypto.Cipher import AES
 from . import helpers
+from .pkcs7 import PKCS7Encoder
 
 
 class TpLinkCipher:
@@ -11,7 +11,7 @@ class TpLinkCipher:
         self.key = b_arr
 
     def encrypt(self, data):
-        data = pkcs7.PKCS7Encoder().encode(data)
+        data = PKCS7Encoder().encode(data)
         data: str
         cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
         encrypted = cipher.encrypt(data.encode("UTF-8"))
@@ -20,4 +20,4 @@ class TpLinkCipher:
     def decrypt(self, data: str):
         aes = AES.new(self.key, AES.MODE_CBC, self.iv)
         pad_text = aes.decrypt(base64.b64decode(data.encode("UTF-8"))).decode("UTF-8")
-        return pkcs7.PKCS7Encoder().decode(pad_text)
+        return PKCS7Encoder().decode(pad_text)
