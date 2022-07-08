@@ -1,9 +1,8 @@
+import codecs
 import os
 from distutils.dist import Distribution
 
 from setuptools import setup, find_packages
-
-import versioneer
 
 with open('README.md') as readme_file:
     README = readme_file.read()
@@ -13,8 +12,25 @@ with open('requirements.txt') as requirements_file:
 
 FORCE_BINARY = 'FORCE_BINARY' in os.environ
 
+
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
 
     class bdist_wheel(_bdist_wheel):
 
@@ -38,7 +54,7 @@ if FORCE_BINARY:
 
 setup_args = dict(
     name='plugp100',
-    version=versioneer.get_version(),
+    version=get_version('plugp100/__init__.py'),
     install_requires=REQUIREMENTS,
     description='Controller for TP-Link Tapo P100 and other devices',
     long_description_content_type="text/markdown",
@@ -56,7 +72,6 @@ setup_args = dict(
     ],
     cmdclass={
         **({'bdist_wheel': bdist_wheel} if FORCE_BINARY else {}),
-        **versioneer.get_cmdclass()
     }
 )
 
