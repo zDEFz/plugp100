@@ -22,8 +22,8 @@ jobs:
       matrix:
         platform:
           - manylinux_2_24_aarch64
-          #- manylinux2014_aarch64
-          #- manylinux2014_armv7l
+          - manylinux2014_aarch64
+          - manylinux2014_armv7l
         python: [ python3.9, python3.10 ]
 
     steps:

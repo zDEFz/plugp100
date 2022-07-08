@@ -3,18 +3,17 @@
 PYTHON_VERSION=$1
 ARCHITECTURE=$2
 
-if [ "$ARCHITECTURE" = "manylinux_2_24_aarch64" ]; then
-    IMAGE_NAME=quay.io/pypa/manylinux_2_24_aarch64
-    DOCKER_PLATFORM=linux/arm64
-elif [ "$ARCHITECTURE" = "manylinux2014_aarch64" ]; then
-    IMAGE_NAME=quay.io/pypa/manylinux2014_aarch64
-    DOCKER_PLATFORM=linux/arm64
-elif [ "$PYTHON_VERSION" = "python3.10" ] && [ "$ARCHITECTURE" = "manylinux2014_armv7l" ]; then
+if [ "$ARCHITECTURE" = "manylinux2014_armv7l" ]; then
+  if [ "$PYTHON_VERSION" = "python3.10" ]; then
     IMAGE_NAME=arm32v7/python:3.10
     DOCKER_PLATFORM=linux/arm
-elif [ "$PYTHON_VERSION" = "python3.9" ] && [ "$ARCHITECTURE" = "manylinux2014_armv7l" ]; then
+  elif [ "$PYTHON_VERSION" = "python3.9" ]; then
     IMAGE_NAME=arm32v7/python:3.9
     DOCKER_PLATFORM=linux/arm
+  fi
+else
+  IMAGE_NAME=quay.io/pypa/$ARCHITECTURE
+  DOCKER_PLATFORM=linux/arm64
 fi
 
 docker run -d \
