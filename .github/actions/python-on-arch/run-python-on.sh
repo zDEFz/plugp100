@@ -3,19 +3,17 @@
 PYTHON_VERSION=$1
 ARCHITECTURE=$2
 
-# TODO: add ARCHITECTURE check as second arguments ARCHITECTURE=$2
-if [ "$PYTHON_VERSION" = "py3.9" ] && [ "$ARCHITECTURE" = "armv7" ]; then
-    IMAGE_NAME=arm32v7/python:3.9
-    DOCKER_PLATFORM=linux/arm
-elif [ "$PYTHON_VERSION" = "py3.9" ] && [ "$ARCHITECTURE" = "arm64" ]; then
-    IMAGE_NAME=arm64v8/python:3.9
-    DOCKER_PLATFORM=linux/arm64
-elif [ "$PYTHON_VERSION" = "py3.10" ] && [ "$ARCHITECTURE" = "armv7" ]; then
+if [ "$ARCHITECTURE" = "manylinux2014_armv7l" ]; then
+  if [ "$PYTHON_VERSION" = "python3.10" ]; then
     IMAGE_NAME=arm32v7/python:3.10
     DOCKER_PLATFORM=linux/arm
-elif [ "$PYTHON_VERSION" = "py3.10" ] && [ "$ARCHITECTURE" = "arm64" ]; then
-    IMAGE_NAME=arm64v8/python:3.10
-    DOCKER_PLATFORM=linux/arm64
+  elif [ "$PYTHON_VERSION" = "python3.9" ]; then
+    IMAGE_NAME=arm32v7/python:3.9
+    DOCKER_PLATFORM=linux/arm
+  fi
+else
+  IMAGE_NAME=quay.io/pypa/$ARCHITECTURE
+  DOCKER_PLATFORM=linux/arm64
 fi
 
 docker run -d \

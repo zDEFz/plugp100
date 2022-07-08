@@ -41,6 +41,6 @@ if __name__ == "__main__":
         compile_wheels = f'--no-binary :all:'
         for requirement in requirements_to_compile:
             vendor_requirement_folder = os.path.join(vendor_wheels_folder, get_requirement_name(requirement))
-            os.system(f"pip install {requirement} -t {vendor_requirement_folder} {compile_wheels} {cache_dir_command}")
+            os.system(f"{sys.executable} -m pip install {requirement} -t {vendor_requirement_folder} {compile_wheels} {cache_dir_command}")
     else:
         print('No requirements to vendor found.')
