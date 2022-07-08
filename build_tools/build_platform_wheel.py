@@ -1,8 +1,8 @@
 import os
 import platform
-import subprocess
 import sys
 import packaging.tags
+import re
 
 from ci_build_utils import get_names_from_wheels, merge_requirements, \
     read_requirements_file, intersect_contains_string, delete_requirements
@@ -24,16 +24,13 @@ def get_interpreter_version() -> str:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print("usage build_platform_wheel.py <vendor_folder> <requirements_file_name>")
         exit(-1)
 
     python_executable = sys.executable
     vendor_folder = sys.argv[1]
     new_requirements_file = sys.argv[2]
-
-    interpreter_implementation = get_interpreter_version()
-    print(f"Intr impl {interpreter_implementation}")
 
     architecture = platform.machine().lower()
     requirements = read_requirements_file('requirements.txt')
@@ -50,6 +47,9 @@ if __name__ == "__main__":
     with open(new_requirements_file, 'w') as file:
         file.writelines('\n'.join(new_requirements))
 
+    # force build binaries for specific platform
+    os.environ['FORCE_BINARY'] = 'True'
     os.system(
-        f'{python_executable} setup.py bdist_wheel --plat-name={get_build_platform()} --python-tag={interpreter_implementation}')
+        f'{python_executable} setup.py bdist_wheel')
+
     print("Done.")

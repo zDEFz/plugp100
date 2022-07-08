@@ -8,38 +8,42 @@ on:
     types: [published]
   push:
     branches:
-      - fix/support-arm64
+      - fix/manylinux
 #    tags:
 #      - v*.*.*
 
 jobs:
   build_vendoring_wheels:
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    #if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
-    name: Build on ${{ matrix.arch }} with ${{ matrix.python }}
+    name: Build on ${{ matrix.platform }} with ${{ matrix.python }}
 
     strategy:
       matrix:
-        arch: [armv7, arm64]
-        python: [py3.9, py3.10]
+        platform:
+          - manylinux_2_24_aarch64
+          #- manylinux2014_aarch64
+          #- manylinux2014_armv7l
+        python: [ python3.9, python3.10 ]
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-      - name: Build wheels for ${{ matrix.python }} on ${{ matrix.arch }}
+      - name: Build wheels for ${{ matrix.python }} on ${{ matrix.platform }}
         uses: ./.github/actions/python-on-arch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          arch: ${{ matrix.arch }}
+          arch: ${{ matrix.platform }}
           python: ${{ matrix.python }}
           run: |
-            python --version
+            ${{ matrix.python }} --version
             echo "Generate vendoring wheel..."
-            python build_tools/build_vendoring.py ./plugp100/_vendor ./.cache-pip
+            ${{ matrix.python }} build_tools/build_vendoring.py ./plugp100/_vendor ./.cache-pip
             echo "Generate library wheel with the right platform name"
-            python build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
-      - name: "Upload generated wheel for ${{ matrix.python }} ${{ matrix.arch }}"
+            ${{ matrix.python }} build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
+            ${{ matrix.python }} build_tools/rename_wheels.py ${{ matrix.platform }}
+      - name: "Upload generated wheel for ${{ matrix.python }} ${{ matrix.platform }}"
         uses: actions/upload-artifact@v2
         with:
           name: wheel
