@@ -23,4 +23,4 @@ __all__ = [
     "TapoApiDiscover"
 ]
 
-__version__ = "2.1.6"
+__version__ = "2.1.16"
