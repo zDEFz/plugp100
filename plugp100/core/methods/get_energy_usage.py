@@ -1,7 +1,6 @@
 from . import taporequest
-from typing import Any
 
 
 class GetEnergyUsageMethod(taporequest.TapoRequest):
-    def __init__(self, params: Any):
+    def __init__(self, params):
         super().__init__("get_energy_usage", params)

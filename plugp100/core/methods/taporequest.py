@@ -10,7 +10,7 @@ class TapoRequest(object):
         return self.method
 
     def set_request_time_milis(self, t: float):
-        self.requestTimeMils = t
+        pass#self.requestTimeMils = t
 
     def set_terminal_uuid(self, uuid: str):
-        self.terminalUUID = uuid
+        pass#self.terminalUUID = uuid
