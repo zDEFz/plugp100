@@ -4,12 +4,14 @@ from typing import Optional
 
 import aiohttp
 
+from plugp100.domain.light_effect import LightEffect
 from plugp100.domain.tapo_state import TapoDeviceState
 from plugp100.domain.energy_info import EnergyInfo
 from plugp100.domain.tapo_api import TapoApi
 from plugp100.tapo_protocol.methods import GetDeviceInfoMethod
 from plugp100.tapo_protocol.methods.get_energy_usage import GetEnergyUsageMethod
 from plugp100.tapo_protocol.params import DeviceInfoParams, SwitchParams, LightParams
+from plugp100.tapo_protocol.params.device_info_params import LightEffectParams
 from plugp100.tapo_protocol.tapo_protocol_client import TapoProtocolClient
 
 logger = logging.getLogger(__name__)
@@ -58,6 +60,10 @@ class TapoApiClient(TapoApi):
 
     async def set_hue_saturation(self, hue: int, saturation: int) -> bool:
         return await self.__set_device_state(LightParams(hue=hue, saturation=saturation))
+
+    async def set_light_effect(self, effect: LightEffect) -> bool:
+        effect_params = LightEffectParams(enable=1, name=effect.name, brightness=100, display_colors=effect.colors)
+        return await self.__set_device_state(LightParams(effect=effect_params))
 
     async def __set_device_state(self, device_params: DeviceInfoParams) -> bool:
         try:
