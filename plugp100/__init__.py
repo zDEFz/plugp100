@@ -11,16 +11,23 @@ if os.path.exists(vendor_dir):
     for vendor_path in os.listdir(vendor_dir):
         sys.path.append(os.path.join(vendor_dir, vendor_path))
 
-from .api import TapoDeviceState, TapoApiClient
 from .discover import TapoApiDiscover
-from .core.params import SwitchParams, LightParams
+from plugp100.tapo_protocol.params import SwitchParams, LightParams
+from plugp100.api.tapo_api_client import TapoApiClient, TapoApiClientConfig
+from plugp100.domain.energy_info import EnergyInfo
+from plugp100.domain.tapo_api import TapoApi
+from plugp100.domain.tapo_state import TapoDeviceState
+from plugp100.domain.tapo_exception import TapoException
 
 __all__ = [
+    "TapoApi",
     "TapoApiClient",
+    "TapoApiClientConfig",
     "TapoDeviceState",
-    "SwitchParams",
-    "LightParams",
-    "TapoApiDiscover"
+    "TapoApiDiscover",
+    "EnergyInfo",
+    "TapoDeviceState",
+    "TapoException"
 ]
 
 __version__ = "2.1.18"

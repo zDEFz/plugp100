@@ -1,4 +1,4 @@
-from plugp100.core.methods import taporequest
+from plugp100.tapo_protocol.methods import taporequest
 
 
 class LoginDeviceMethod(taporequest.TapoRequest):

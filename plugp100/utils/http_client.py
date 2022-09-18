@@ -1,7 +1,6 @@
 from typing import Any
 
 import aiohttp
-import requests
 
 
 class AsyncHttp:

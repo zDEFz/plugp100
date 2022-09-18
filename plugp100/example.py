@@ -1,15 +1,18 @@
 import asyncio
 
-from plugp100 import TapoApiClient
+from plugp100 import TapoApiClient, TapoApiClientConfig
 
 
 async def main():
     # create generic tapo api
-    sw = TapoApiClient("<ip>", "<email>", "<passwd>")
+    config = TapoApiClientConfig("<ip>", "<email>", "<passwd>")
+    sw = TapoApiClient.from_config(config)
     await sw.login()
     await sw.on()
     await sw.set_brightness(100)
-    print(await sw.get_state())
+    state = await sw.get_state()
+    print(state.get_unmapped_state())
+
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
