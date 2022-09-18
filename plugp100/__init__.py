@@ -32,4 +32,4 @@ __all__ = [
     "TapoException"
 ]
 
-__version__ = "2.1.18"
+__version__ = "2.1.19"
