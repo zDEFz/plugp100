@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build wheels for ${{ matrix.python }} on ${{ matrix.platform }}
         uses: ./.github/actions/python-on-arch
         env:
@@ -44,7 +44,7 @@ jobs:
             ${{ matrix.python }} build_tools/build_platform_wheel.py ./plugp100/_vendor requirements.txt
             ${{ matrix.python }} build_tools/rename_wheels.py ${{ matrix.platform }}
       - name: "Upload generated wheel for ${{ matrix.python }} ${{ matrix.platform }}"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheel
           path: dist/*
@@ -57,14 +57,14 @@ jobs:
     needs: [ build_vendoring_wheels ]
 
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3.0.2
       - name: "Retrieve compiled requirements"
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: wheel
           path: ./dist
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
       - name: Install dependencies

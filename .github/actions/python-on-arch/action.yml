@@ -35,14 +35,14 @@ runs:
         EOF
         chmod +x ./run.sh
         cat ./run.sh
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       name: "Cache pip wheels"
       id: cache-pip-wheels
       with:
         path: ${{ inputs.cache-dir }}
         key: ${{ runner.os }}-${{ inputs.python }}-${{ inputs.arch }}-on-arch-${{ hashFiles('**/run.sh', '**/requirements.txt', '**/vendor-armv7l.txt') }}
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
       with:
         image: tonistiigi/binfmt:latest
         platforms: all
