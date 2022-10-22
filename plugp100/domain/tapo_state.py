@@ -8,6 +8,8 @@ from plugp100.domain.energy_info import EnergyInfo
 @dataclasses.dataclass
 class TapoDeviceState:
     device_id: str = property(lambda self: self.state["device_id"])
+    firmware_version: str = property(lambda self: self.state["fw_ver"])
+    hardware_version: str = property(lambda self: self.state["hw_ver"])
     mac: str = property(lambda self: self.state["mac"])
     nickname: str = property(lambda self: base64.b64decode(self.state["nickname"]).decode("UTF-8"))
     model: str = property(lambda self: self.state["model"])
