@@ -11,12 +11,15 @@ async def main():
     await sw.on()
     await sw.set_brightness(100)
     state = await sw.get_state()
-    print(state.get_unmapped_state())
+    print(state.firmware_version)
+    print(state.is_hardware_v2)
 
     # light effect example
     await sw.set_light_effect(LightEffect.rainbow())
     state = await sw.get_state()
     print(state.get_unmapped_state())
+    print(state.get_energy_unmapped_state())
+    print(state.get_semantic_firmware_version())
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())

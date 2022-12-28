@@ -1,6 +1,6 @@
 import dataclasses
 import logging
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import aiohttp
 
@@ -73,8 +73,8 @@ class TapoApiClient(TapoApi):
             logger.error(e)
             return False
 
-    async def __get_energy_usage(self) -> Optional[EnergyInfo]:
+    async def __get_energy_usage(self) -> Optional[Dict[str, Any]]:
         try:
-            return EnergyInfo(await self.client.send_tapo_request(GetEnergyUsageMethod(None)))
+            return await self.client.send_tapo_request(GetEnergyUsageMethod(None))
         except (Exception,):
             return None

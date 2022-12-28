@@ -12,3 +12,7 @@ class EnergyInfo:
 
     def __init__(self, info: Dict[str, Any]):
         self.info = info
+
+    def get_unmapped_state(self):
+        return self.info
+    
