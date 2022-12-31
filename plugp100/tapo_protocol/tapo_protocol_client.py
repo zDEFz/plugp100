@@ -138,6 +138,7 @@ class TapoProtocolClient:
 
         logger.debug(f"Device inner response: {decrypted_inner_response}")
 
+        self._validate_response(decrypted_inner_response)
         self.token = decrypted_inner_response['result']['token']
 
     def _validate_response(self, resp: dict):
