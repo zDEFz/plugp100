@@ -21,7 +21,7 @@ async def main():
     print(state.get_energy_unmapped_state())
     print(state.get_semantic_firmware_version())
 
-loop = asyncio.get_event_loop()
+loop = asyncio.new_event_loop()
 loop.run_until_complete(main())
 loop.run_until_complete(asyncio.sleep(0.1))
 loop.close()
