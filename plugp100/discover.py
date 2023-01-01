@@ -27,7 +27,7 @@ class TapoApiDiscover:
 
         try:
             response = await http.async_make_post(url, json=request_body)
-            resp_dict = await response.json()
+            resp_dict = await response.json(content_type=None)
 
             if 'error_code' in resp_dict:
                 if resp_dict['error_code'] != 0:

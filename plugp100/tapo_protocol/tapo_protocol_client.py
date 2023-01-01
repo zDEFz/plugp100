@@ -55,7 +55,7 @@ class TapoProtocolClient:
 
         response = await self.http.async_make_post_cookie(f"{self.url}?token={self.token}", request_body,
                                                           {'TP_SESSIONID': self.cookie_token})
-        resp_dict: dict = await response.json()
+        resp_dict: dict = await response.json(content_type=None)
         logger.debug(f"Device responded with: {resp_dict}")
 
         self._validate_response(resp_dict)
@@ -85,7 +85,7 @@ class TapoProtocolClient:
         logger.debug(f"Request body: {request_body}")
 
         response = await self.http.async_make_post(self.url, json=request_body)
-        resp_dict = await response.json()
+        resp_dict = await response.json(content_type=None)
         logger.debug(f"Device responded with: {resp_dict}")
         self._validate_response(resp_dict)
         self.cookie_token = response.cookies.get('TP_SESSIONID').value
@@ -125,7 +125,7 @@ class TapoProtocolClient:
 
         response = await self.http.async_make_post_cookie(self.url, request_body,
                                                           {'TP_SESSIONID': self.cookie_token})
-        resp_dict: dict = await response.json()
+        resp_dict: dict = await response.json(content_type=None)
         logger.debug(f"Device responded with: {resp_dict}")
 
         self._validate_response(resp_dict)
