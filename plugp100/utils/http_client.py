@@ -15,7 +15,16 @@ class AsyncHttp:
 
     async def async_make_post_cookie(self, url, json, cookie) -> aiohttp.ClientResponse:
         self.session.cookie_jar.clear()
-        async with self.session.post(url, json=json, cookies=cookie, headers={"Content-Type": "application/json"}) as response:
+        async with self.session.post(
+                url,
+                json=json,
+                cookies=cookie,
+                headers={
+                    "Content-Type": "application/json",
+                    "requestByApp": "true",
+                    "Accept": "application/json"
+                }
+        ) as response:
             return await self._force_read_release(response)
 
     async def _force_read_release(self, response):

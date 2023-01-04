@@ -30,7 +30,7 @@ class LightParams(SwitchParams):
     color_temp: Optional[int]
     saturation: Optional[int]
     hue: Optional[int]
-    effect: Optional[LightEffectParams]
+    lighting_effect: Optional[LightEffectParams]
 
     def __init__(self,
                  brightness: Optional[int] = None,
@@ -43,15 +43,15 @@ class LightParams(SwitchParams):
         self.color_temp = color_temperature
         self.saturation = saturation
         self.hue = hue
-        self.effect = effect
+        self.lighting_effect = effect
         self.__enforce_effect_invariant()
 
     def __enforce_effect_invariant(self):
         is_single_prop_set = self.saturation is not None \
-                               or self.brightness is not None \
-                               or self.color_temp is not None \
-                               or self.hue is not None
-        if self.effect is not None:
-            self.effect.enable = 0 if is_single_prop_set else 1
+                             or self.brightness is not None \
+                             or self.color_temp is not None \
+                             or self.hue is not None
+        if self.lighting_effect is not None:
+            self.lighting_effect.enable = 0 if is_single_prop_set else 1
         else:
-            self.effect = LightEffectParams(enable=0, name=None, brightness=None, display_colors=[])
+            self.lighting_effect = LightEffectParams(enable=0, name=None, brightness=None, display_colors=[])
