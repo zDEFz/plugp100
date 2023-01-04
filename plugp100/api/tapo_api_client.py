@@ -69,7 +69,7 @@ class TapoApiClient(TapoApi):
             await self.client.set_device_state(device_params, self.TERMINAL_UUID)
             return True
         except Exception as e:
-            logger.error(f"Error during set device state {e}")
+            logger.error("Error during set device state %s", str(e))
             return False
 
     async def __get_energy_usage(self) -> Optional[Dict[str, Any]]:
