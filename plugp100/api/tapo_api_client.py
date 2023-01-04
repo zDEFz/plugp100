@@ -5,9 +5,8 @@ from typing import Optional, Dict, Any
 import aiohttp
 
 from plugp100.domain.light_effect import LightEffect
-from plugp100.domain.tapo_state import TapoDeviceState
-from plugp100.domain.energy_info import EnergyInfo
 from plugp100.domain.tapo_api import TapoApi
+from plugp100.domain.tapo_state import TapoDeviceState
 from plugp100.tapo_protocol.methods import GetDeviceInfoMethod
 from plugp100.tapo_protocol.methods.get_energy_usage import GetEnergyUsageMethod
 from plugp100.tapo_protocol.params import DeviceInfoParams, SwitchParams, LightParams
@@ -56,21 +55,21 @@ class TapoApiClient(TapoApi):
         return await self.__set_device_state(LightParams(brightness=brightness))
 
     async def set_color_temperature(self, color_temperature: int) -> bool:
-        return await self.__set_device_state(LightParams(color_temperature=color_temperature))
+        return await self.__set_device_state(LightParams(color_temperature=color_temperature, hue=0, saturation=0))
 
     async def set_hue_saturation(self, hue: int, saturation: int) -> bool:
-        return await self.__set_device_state(LightParams(hue=hue, saturation=saturation))
+        return await self.__set_device_state(LightParams(hue=hue, saturation=saturation, color_temperature=0))
 
     async def set_light_effect(self, effect: LightEffect) -> bool:
         effect_params = LightEffectParams(enable=1, name=effect.name, brightness=100, display_colors=effect.colors)
-        return await self.__set_device_state(LightParams(effect=effect_params))
+        return await self.__set_device_state(LightParams(effect=effect_params, hue=0, saturation=0, color_temperature=0))
 
     async def __set_device_state(self, device_params: DeviceInfoParams) -> bool:
         try:
             await self.client.set_device_state(device_params, self.TERMINAL_UUID)
             return True
         except Exception as e:
-            logger.error(e)
+            logger.error(f"Error during set device state {e}")
             return False
 
     async def __get_energy_usage(self) -> Optional[Dict[str, Any]]:

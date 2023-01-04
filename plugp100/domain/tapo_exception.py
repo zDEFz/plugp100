@@ -4,7 +4,7 @@ from enum import Enum
 class TapoError(Enum):
     INVALID_PUBLIC_KEY = -1010
     INVALID_CREDENTIAL = -1501
-    INVALID_REQUEST = 1002
+    INVALID_REQUEST = -1002
     INVALID_JSON = -1003
 
 
