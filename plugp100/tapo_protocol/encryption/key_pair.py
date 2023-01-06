@@ -1,30 +1,36 @@
-from Crypto.PublicKey import RSA
-
-from plugp100.tapo_protocol.encryption import helpers
+import base64
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 
 class KeyPair(object):
 
     @staticmethod
     def create_key_pair() -> 'KeyPair':
-        key = RSA.generate(1024)
-        private_key = key.export_key(pkcs=8, format="DER")
-        public_key = key.publickey().export_key(pkcs=8, format="DER")
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
+        public_key = private_key.public_key()
 
-        private_key = helpers.mime_encoder(private_key)
-        public_key = helpers.mime_encoder(public_key)
+        private_key_bytes = private_key.private_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+        public_key_bytes = public_key.public_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
 
         return KeyPair(
-            private_key=private_key,
-            public_key=public_key
+            private_key=base64.b64encode(private_key_bytes).decode("UTF-8"),
+            public_key=base64.b64encode(public_key_bytes).decode("UTF-8")
         )
 
     def __init__(self, private_key: str, public_key: str):
         self.private_key = private_key
         self.public_key = public_key
 
-    def get_private_key(self):
+    def get_private_key(self) -> str:
         return self.private_key
 
-    def get_public_key(self):
+    def get_public_key(self) -> str:
         return self.public_key
