@@ -1,48 +1,53 @@
 import base64
 
-from Crypto.Cipher import AES
-from Crypto.Cipher import PKCS1_v1_5
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from . import helpers
 from .key_pair import KeyPair
-from plugp100.tapo_protocol.encryption.pkcs7 import PKCS7Encoder
 
 
 class TpLinkCipher:
 
+    def encrypt(self, data) -> str:
+        pass
+
+    def decrypt(self, data) -> str:
+        pass
+
+
+class TpLinkCipherCryptography(TpLinkCipher):
+
     @staticmethod
     def create_from_keypair(handshake_key: str, keypair: KeyPair) -> 'TpLinkCipher':
-        decode: bytes = base64.b64decode(handshake_key.encode("UTF-8"))
-        decode2: bytes = base64.b64decode(keypair.get_private_key())
+        handshake_key: bytes = base64.b64decode(handshake_key.encode("UTF-8"))
+        private_key_data = base64.b64decode(keypair.get_private_key().encode("UTF-8"))
 
-        cipher = PKCS1_v1_5.new(RSA.import_key(decode2))
-        do_final = cipher.decrypt(decode, None)
-        if do_final is None:
+        private_key = serialization.load_der_private_key(private_key_data, None, None)
+        key_and_iv = private_key.decrypt(handshake_key, asymmetric_padding.PKCS1v15())
+        if key_and_iv is None:
             raise ValueError("Decryption failed!")
 
-        b_arr: bytearray = bytearray()
-        b_arr2: bytearray = bytearray()
+        return TpLinkCipherCryptography(
+            key_and_iv[:16],
+            key_and_iv[16:]
+        )
 
-        for i in range(0, 16):
-            b_arr.insert(i, do_final[i])
-        for i in range(0, 16):
-            b_arr2.insert(i, do_final[i + 16])
+    def __init__(self, key, iv):
+        self.cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+        self.padding_strategy = padding.PKCS7(algorithms.AES.block_size)
 
-        return TpLinkCipher(b_arr, b_arr2)
+    def encrypt(self, data) -> str:
+        encryptor = self.cipher.encryptor()
+        padder = self.padding_strategy.padder()
+        padded_data = padder.update(data.encode("UTF-8")) + padder.finalize()
+        encrypted = encryptor.update(padded_data) + encryptor.finalize()
+        return base64.b64encode(encrypted).decode("UTF-8")
 
-    def __init__(self, b_arr: bytearray, b_arr2: bytearray):
-        self.iv = b_arr2
-        self.key = b_arr
-
-    def encrypt(self, data):
-        data = PKCS7Encoder().encode(data)
-        data: str
-        cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
-        encrypted = cipher.encrypt(data.encode("UTF-8"))
-        return helpers.mime_encoder(encrypted).replace("\r\n", "")
-
-    def decrypt(self, data: str):
-        aes = AES.new(self.key, AES.MODE_CBC, self.iv)
-        pad_text = aes.decrypt(base64.b64decode(data.encode("UTF-8"))).decode("UTF-8")
-        return PKCS7Encoder().decode(pad_text)
+    def decrypt(self, data) -> str:
+        decryptor = self.cipher.decryptor()
+        unpadder = self.padding_strategy.unpadder()
+        decrypted = decryptor.update(base64.b64decode(data.encode("UTF-8"))) + decryptor.finalize()
+        unpadded_data = unpadder.update(decrypted) + unpadder.finalize()
+        return unpadded_data.decode("UTF-8")
