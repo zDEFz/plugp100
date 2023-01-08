@@ -2,6 +2,8 @@ import base64
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
+from plugp100.tapo_protocol.encryption.helpers import Base64str
+
 
 class KeyPair(object):
 
@@ -29,8 +31,8 @@ class KeyPair(object):
         self.private_key = private_key
         self.public_key = public_key
 
-    def get_private_key(self) -> str:
+    def get_private_key(self) -> Base64str:
         return self.private_key
 
-    def get_public_key(self) -> str:
+    def get_public_key(self) -> Base64str:
         return self.public_key

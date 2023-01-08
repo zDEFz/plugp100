@@ -5,15 +5,14 @@ from typing import Dict, Any
 import aiohttp
 import jsons
 
-from plugp100.tapo_protocol.encryption import helpers
 from plugp100.domain.tapo_exception import TapoException
-from plugp100.tapo_protocol.encryption.helpers import Helpers
-from plugp100.utils.http_client import AsyncHttp
+from plugp100.tapo_protocol.encryption import helpers
 from plugp100.tapo_protocol.encryption.key_pair import KeyPair
+from plugp100.tapo_protocol.encryption.tp_link_cipher import TpLinkCipher, TpLinkCipherCryptography
 from plugp100.tapo_protocol.methods import taporequest, SecurePassthroughMethod, HandshakeMethod, LoginDeviceMethod
 from plugp100.tapo_protocol.methods.set_device_info_method import SetDeviceInfoMethod
 from plugp100.tapo_protocol.params import DeviceInfoParams, HandshakeParams, LoginDeviceParams
-from plugp100.tapo_protocol.encryption.tp_link_cipher import TpLinkCipher
+from plugp100.utils.http_client import AsyncHttp
 
 logger = logging.getLogger(__name__)
 
@@ -93,26 +92,24 @@ class TapoProtocolClient:
 
         logger.debug("Decoding handshake key...")
         handshake_key = resp_dict['result']['key']
-        self.tp_link_cipher = TpLinkCipher.create_from_keypair(handshake_key, self.key_pair)
+        self.tp_link_cipher = TpLinkCipherCryptography.create_from_keypair(handshake_key, self.key_pair)
 
     async def _login_request(self, username: str, password: str):
         logger.debug(f"Will login using username '{username[5:]}...'")
-        digest_username = Helpers.sha_digest_username(username)
+        digest_username = helpers.sha1(username)
         logger.debug(f"Username digest: ...{digest_username[:5]}")
 
         login_device_params = LoginDeviceParams(
-            helpers.mime_encoder(password.encode("UTF-8")),
-            helpers.mime_encoder(digest_username.encode("UTF-8"))
+            helpers.base64encode(password),
+            helpers.base64encode(digest_username)
         )
 
-        l_ldp = jsons.dumps(login_device_params).replace(helpers.mime_encoder(password.encode("UTF-8")),
-                                                         "PASSWORD_REMOVED")
+        l_ldp = jsons.dumps(login_device_params).replace(helpers.base64encode(password), "PASSWORD_REMOVED")
         logger.debug(f"Login device params: {l_ldp}")
 
         login_device_method = LoginDeviceMethod(login_device_params)
         login_device_method.set_request_time_milis(time())
-        l_ldm = jsons.dumps(login_device_method).replace(helpers.mime_encoder(password.encode("UTF-8")),
-                                                         "PASSWORD_REMOVED")
+        l_ldm = jsons.dumps(login_device_method).replace(helpers.base64encode(password), "PASSWORD_REMOVED")
         logger.debug(f"Login device method: {l_ldm}")
 
         ldm_encrypted = self.tp_link_cipher.encrypt(jsons.dumps(login_device_method))
