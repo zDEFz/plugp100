@@ -1,9 +1,12 @@
 import base64
 import dataclasses
+
+import jsons
 import semantic_version
 from typing import Optional, Dict, Any
 
 from plugp100.domain.energy_info import EnergyInfo
+from plugp100.tapo_protocol.params import LightEffectData
 
 
 @dataclasses.dataclass
@@ -25,9 +28,11 @@ class TapoDeviceState:
     rssi: int = property(lambda self: self.state["rssi"])
     energy_info: EnergyInfo = property(lambda self: self._energy_info)
     is_hardware_v2: bool = property(lambda self: self.firmware_version == "2.0")
+    light_effect: LightEffectData = None
 
     def __init__(self, state: Dict[str, Any], energy_info: Dict[str, any]):
         self.state = state
+        self.light_effect = LightEffectData(**jsons.load(state['lighting_effect']))
         self._energy_info = EnergyInfo(energy_info) if energy_info is not None else None
 
     def get_unmapped_state(self) -> Dict[str, Any]:

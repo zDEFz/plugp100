@@ -4,13 +4,11 @@ from typing import Optional, Dict, Any
 
 import aiohttp
 
-from plugp100.domain.light_effect import LightEffect
 from plugp100.domain.tapo_api import TapoApi
 from plugp100.domain.tapo_state import TapoDeviceState
 from plugp100.tapo_protocol.methods import GetDeviceInfoMethod
 from plugp100.tapo_protocol.methods.get_energy_usage import GetEnergyUsageMethod
-from plugp100.tapo_protocol.params import DeviceInfoParams, SwitchParams, LightParams
-from plugp100.tapo_protocol.params.device_info_params import LightEffectParams
+from plugp100.tapo_protocol.params import DeviceInfoParams, SwitchParams, LightParams, LightEffectData
 from plugp100.tapo_protocol.tapo_protocol_client import TapoProtocolClient
 
 logger = logging.getLogger(__name__)
@@ -60,9 +58,12 @@ class TapoApiClient(TapoApi):
     async def set_hue_saturation(self, hue: int, saturation: int) -> bool:
         return await self.__set_device_state(LightParams(hue=hue, saturation=saturation, color_temperature=0))
 
-    async def set_light_effect(self, effect: LightEffect) -> bool:
-        effect_params = LightEffectParams(enable=1, name=effect.name, brightness=100, display_colors=effect.colors)
-        return await self.__set_device_state(LightParams(effect=effect_params, hue=0, saturation=0, color_temperature=0))
+    async def set_light_effect(self, effect: LightEffectData) -> bool:
+        try:
+            return await self.client.set_lighting_effect_state(effect, self.TERMINAL_UUID)
+        except Exception as e:
+            logger.error("Error during set lighting state %s", str(e))
+            return False
 
     async def __set_device_state(self, device_params: DeviceInfoParams) -> bool:
         try:

@@ -43,3 +43,15 @@ class LightEffect:
                 [300, 100, 100]
             ]
         )
+
+    @staticmethod
+    def aurora() -> 'LightEffect':
+        return LightEffect(
+            "Aurora",
+            [
+                [120, 100, 100],
+                [240, 100, 100],
+                [260, 100, 100],
+                [280, 100, 100]
+            ]
+        )
