@@ -8,6 +8,7 @@ from plugp100.domain.light_effect import LightEffect
 from plugp100.domain.tapo_api import TapoApi
 from plugp100.domain.tapo_state import TapoDeviceState
 from plugp100.tapo_protocol.methods import GetDeviceInfoMethod
+from plugp100.tapo_protocol.methods.get_current_power import GetCurrentPowerMethod
 from plugp100.tapo_protocol.methods.get_energy_usage import GetEnergyUsageMethod
 from plugp100.tapo_protocol.params import DeviceInfoParams, SwitchParams, LightParams
 from plugp100.tapo_protocol.params.device_info_params import LightEffectParams
@@ -43,7 +44,8 @@ class TapoApiClient(TapoApi):
     async def get_state(self) -> TapoDeviceState:
         state_dict = await self.client.send_tapo_request(GetDeviceInfoMethod(None))
         energy_info = await self.__get_energy_usage()
-        return TapoDeviceState(state=state_dict, energy_info=energy_info)
+        power_info = await self.__get_current_power()
+        return TapoDeviceState(state=state_dict, energy_info=energy_info, power_info=power_info)
 
     async def on(self) -> bool:
         return await self.__set_device_state(SwitchParams(True))
@@ -75,5 +77,11 @@ class TapoApiClient(TapoApi):
     async def __get_energy_usage(self) -> Optional[Dict[str, Any]]:
         try:
             return await self.client.send_tapo_request(GetEnergyUsageMethod(None))
+        except (Exception,):
+            return None
+
+    async def __get_current_power(self) -> Optional[Dict[str, Any]]:
+        try:
+            return await self.client.send_tapo_request(GetCurrentPowerMethod(None))
         except (Exception,):
             return None
