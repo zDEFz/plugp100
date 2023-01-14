@@ -1,11 +1,11 @@
 import base64
 import dataclasses
-
-import jsons
-import semantic_version
 from typing import Optional, Dict, Any
 
+import semantic_version
+
 from plugp100.domain.energy_info import EnergyInfo
+from plugp100.domain.power_info import PowerInfo
 from plugp100.tapo_protocol.params import LightEffectData
 
 
@@ -27,19 +27,24 @@ class TapoDeviceState:
     signal_level: int = property(lambda self: self.state["signal_level"])
     rssi: int = property(lambda self: self.state["rssi"])
     energy_info: EnergyInfo = property(lambda self: self._energy_info)
+    power_info: PowerInfo = property(lambda self: self._power_info)
     is_hardware_v2: bool = property(lambda self: self.firmware_version == "2.0")
     light_effect: Optional[LightEffectData] = None
 
-    def __init__(self, state: Dict[str, Any], energy_info: Dict[str, any]):
+    def __init__(self, state: Dict[str, Any], energy_info: Dict[str, any], power_info: Dict[str, any]):
         self.state = state
         self.light_effect = LightEffectData(**state['lighting_effect']) if 'lighting_effect' in state else None
         self._energy_info = EnergyInfo(energy_info) if energy_info is not None else None
+        self._power_info = PowerInfo(power_info) if power_info is not None else None
 
     def get_unmapped_state(self) -> Dict[str, Any]:
         return self.state
 
     def get_energy_unmapped_state(self) -> Dict[str, Any]:
         return self._energy_info.get_unmapped_state() if self.energy_info is not None else {}
+
+    def get_power_unmapped_state(self) -> Dict[str, Any]:
+        return self._power_info.get_unmapped_state() if self.power_info is not None else {}
 
     def get_semantic_firmware_version(self) -> semantic_version.Version:
         pieces = self.firmware_version.split("Build")
