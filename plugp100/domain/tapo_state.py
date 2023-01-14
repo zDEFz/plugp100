@@ -32,7 +32,7 @@ class TapoDeviceState:
 
     def __init__(self, state: Dict[str, Any], energy_info: Dict[str, any]):
         self.state = state
-        self.light_effect = LightEffectData(**jsons.load(state['lighting_effect']))
+        self.light_effect = LightEffectData(**state['lighting_effect'])
         self._energy_info = EnergyInfo(energy_info) if energy_info is not None else None
 
     def get_unmapped_state(self) -> Dict[str, Any]:

@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
-from plugp100.domain.light_effect import LightEffect
+
 from plugp100.domain.tapo_state import TapoDeviceState
+from plugp100.tapo_protocol.params import LightEffectData
 
 
 class TapoApi:
@@ -29,4 +30,4 @@ class TapoApi:
     async def set_hue_saturation(self, hue: int, saturation: int) -> bool: raise NotImplementedError
 
     @abstractmethod
-    async def set_light_effect(self, effect: LightEffect) -> bool: raise NotImplementedError
+    async def set_light_effect(self, effect: LightEffectData) -> bool: raise NotImplementedError
