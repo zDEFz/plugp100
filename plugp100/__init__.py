@@ -18,12 +18,12 @@ from plugp100.domain.energy_info import EnergyInfo
 from plugp100.domain.tapo_api import TapoApi
 from plugp100.domain.tapo_state import TapoDeviceState
 from plugp100.domain.tapo_exception import TapoException, TapoError
-from plugp100.domain.light_effect import LightEffect
+from plugp100.domain.light_effect import LightEffectData
 
 __all__ = [
     "TapoApi",
     "TapoApiClient",
-    "LightEffect",
+    "LightEffectData",
     "TapoApiClientConfig",
     "TapoDeviceState",
     "TapoApiDiscover",
@@ -33,4 +33,4 @@ __all__ = [
     "TapoError"
 ]
 
-__version__ = "2.3.1"
+__version__ = "2.4.0"

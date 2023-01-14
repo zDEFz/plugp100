@@ -11,7 +11,8 @@ from plugp100.tapo_protocol.encryption.key_pair import KeyPair
 from plugp100.tapo_protocol.encryption.tp_link_cipher import TpLinkCipher, TpLinkCipherCryptography
 from plugp100.tapo_protocol.methods import taporequest, SecurePassthroughMethod, HandshakeMethod, LoginDeviceMethod
 from plugp100.tapo_protocol.methods.set_device_info_method import SetDeviceInfoMethod
-from plugp100.tapo_protocol.params import DeviceInfoParams, HandshakeParams, LoginDeviceParams
+from plugp100.tapo_protocol.methods.set_lighting_method import SetLightingMethod
+from plugp100.tapo_protocol.params import DeviceInfoParams, HandshakeParams, LoginDeviceParams, LightEffectData
 from plugp100.utils.http_client import AsyncHttp
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,13 @@ class TapoProtocolClient:
         device_info_method.set_terminal_uuid(terminal_uuid)
         logger.debug(f"Device info method: {jsons.dumps(device_info_method)}")
         return await self.send_tapo_request(device_info_method)
+
+    async def set_lighting_effect_state(self, state: LightEffectData, terminal_uuid: str):
+        method = SetLightingMethod(state.as_dict())
+        method.set_request_time_milis(time())
+        method.set_terminal_uuid(terminal_uuid)
+        logger.debug(f"Device info method: {jsons.dumps(method)}")
+        return await self.send_tapo_request(method)
 
     async def send_tapo_request(self, method: taporequest.TapoRequest) -> Dict[str, Any]:
         logger.debug(f"Method request: {jsons.dumps(method)}")
