@@ -24,7 +24,7 @@ class TapoDeviceState:
     overheated: bool = property(lambda self: self.state["overheated"])
     signal_level: int = property(lambda self: self.state["signal_level"])
     rssi: int = property(lambda self: self.state["rssi"])
-    is_hardware_v2: bool = property(lambda self: self.firmware_version == "2.0")
+    is_hardware_v2: bool = property(lambda self: self.hardware_version == "2.0")
     light_effect: Optional[LightEffectData] = None
 
     def __init__(self, state: Dict[str, Any], energy_info: Dict[str, any], power_info: Dict[str, any]):
