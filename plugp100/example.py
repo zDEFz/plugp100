@@ -21,10 +21,11 @@ async def main():
     # light effect example
     await sw.set_light_effect(LightEffectPreset.rainbow().effect)
     state = await sw.get_state()
+    energy_info = await sw.get_energy_usage()
+    power_info = await sw.get_power_info()
     print(state.get_unmapped_state())
-    print(state.get_unmapped_state())
-    print(state.get_energy_unmapped_state())
-    print(state.get_semantic_firmware_version())
+    print(energy_info and energy_info.get_unmapped_state())
+    print(power_info and power_info.get_unmapped_state())
 
 
 if __name__ == "__main__":

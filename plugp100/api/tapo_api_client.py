@@ -4,6 +4,8 @@ from typing import Optional, Dict, Any
 
 import aiohttp
 
+from plugp100.domain.energy_info import EnergyInfo
+from plugp100.domain.power_info import PowerInfo
 from plugp100.domain.tapo_api import TapoApi
 from plugp100.domain.tapo_state import TapoDeviceState
 from plugp100.tapo_protocol.methods import GetDeviceInfoMethod
@@ -44,6 +46,14 @@ class TapoApiClient(TapoApi):
         energy_info = await self.__get_energy_usage()
         power_info = await self.__get_current_power()
         return TapoDeviceState(state=state_dict, energy_info=energy_info, power_info=power_info)
+
+    async def get_energy_usage(self) -> Optional[EnergyInfo]:
+        energy_info = await self.__get_energy_usage()
+        return EnergyInfo(energy_info) if energy_info is not None else None
+
+    async def get_power_info(self) -> Optional[PowerInfo]:
+        power_info = await self.__get_current_power()
+        return PowerInfo(power_info) if power_info is not None else None
 
     async def on(self) -> bool:
         return await self.__set_device_state(SwitchParams(True))

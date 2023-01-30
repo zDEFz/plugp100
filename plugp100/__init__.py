@@ -2,6 +2,8 @@
 import os
 import sys
 
+from .domain.power_info import PowerInfo
+
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # Vendoring: add vendor directory to module search path
@@ -31,7 +33,8 @@ __all__ = [
     "EnergyInfo",
     "TapoDeviceState",
     "TapoException",
-    "TapoError"
+    "TapoError",
+    "PowerInfo"
 ]
 
 __version__ = "2.4.1"

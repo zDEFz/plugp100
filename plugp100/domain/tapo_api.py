@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
+from typing import Optional
 
-
+from plugp100.domain.energy_info import EnergyInfo
+from plugp100.domain.power_info import PowerInfo
 from plugp100.domain.tapo_state import TapoDeviceState
 from plugp100.tapo_protocol.params import LightEffectData
 
@@ -13,6 +15,12 @@ class TapoApi:
 
     @abstractmethod
     async def get_state(self) -> TapoDeviceState: raise NotImplementedError
+
+    @abstractmethod
+    async def get_energy_usage(self) -> Optional[EnergyInfo]: raise NotImplementedError
+
+    @abstractmethod
+    async def get_power_info(self) -> Optional[PowerInfo]: raise NotImplementedError
 
     @abstractmethod
     async def on(self) -> bool: raise NotImplementedError
