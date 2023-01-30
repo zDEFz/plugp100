@@ -32,10 +32,10 @@ class TapoApi:
     async def set_brightness(self, brightness: int) -> bool: raise NotImplementedError
 
     @abstractmethod
-    async def set_color_temperature(self, color_temperature: int) -> bool: raise NotImplementedError
+    async def set_color_temperature(self, color_temperature: int, brightness: Optional[int]) -> bool: raise NotImplementedError
 
     @abstractmethod
-    async def set_hue_saturation(self, hue: int, saturation: int) -> bool: raise NotImplementedError
+    async def set_hue_saturation(self, hue: int, saturation: int, brightness: Optional[int]) -> bool: raise NotImplementedError
 
     @abstractmethod
     async def set_light_effect(self, effect: LightEffectData) -> bool: raise NotImplementedError

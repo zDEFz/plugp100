@@ -64,11 +64,11 @@ class TapoApiClient(TapoApi):
     async def set_brightness(self, brightness: int) -> bool:
         return await self.__set_device_state(LightParams(brightness=brightness))
 
-    async def set_color_temperature(self, color_temperature: int) -> bool:
-        return await self.__set_device_state(LightParams(color_temperature=color_temperature, hue=0, saturation=0, brightness=(await self.get_state()).state["brightness"]))
+    async def set_color_temperature(self, color_temperature: int, brightness: Optional[int] = None) -> bool:
+        return await self.__set_device_state(LightParams(color_temperature=color_temperature, hue=0, saturation=0, brightness=brightness))
 
-    async def set_hue_saturation(self, hue: int, saturation: int) -> bool:
-        return await self.__set_device_state(LightParams(hue=hue, saturation=saturation, color_temperature=0, brightness=(await self.get_state()).state["brightness"]))
+    async def set_hue_saturation(self, hue: int, saturation: int, brightness: Optional[int] = None) -> bool:
+        return await self.__set_device_state(LightParams(hue=hue, saturation=saturation, color_temperature=0, brightness=brightness))
 
     async def set_light_effect(self, effect: LightEffectData) -> bool:
         try:
