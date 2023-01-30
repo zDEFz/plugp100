@@ -14,7 +14,8 @@ class TapoApi:
     async def login(self) -> bool: raise NotImplementedError
 
     @abstractmethod
-    async def get_state(self) -> TapoDeviceState: raise NotImplementedError
+    async def get_state(self, include_energy: bool = False, include_power: bool = False) -> TapoDeviceState:
+        raise NotImplementedError
 
     @abstractmethod
     async def get_energy_usage(self) -> Optional[EnergyInfo]: raise NotImplementedError

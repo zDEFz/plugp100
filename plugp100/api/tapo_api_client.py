@@ -41,10 +41,10 @@ class TapoApiClient(TapoApi):
         await self.client.login()
         return True
 
-    async def get_state(self) -> TapoDeviceState:
+    async def get_state(self, include_energy: bool = False, include_power: bool = False) -> TapoDeviceState:
         state_dict = await self.client.send_tapo_request(GetDeviceInfoMethod(None))
-        energy_info = await self.__get_energy_usage()
-        power_info = await self.__get_current_power()
+        energy_info = await self.__get_energy_usage() if include_energy else None
+        power_info = await self.__get_current_power() if include_power else None
         return TapoDeviceState(state=state_dict, energy_info=energy_info, power_info=power_info)
 
     async def get_energy_usage(self) -> Optional[EnergyInfo]:
