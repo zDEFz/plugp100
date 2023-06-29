@@ -19,7 +19,7 @@ async def main():
     print(await client.get_current_power())
     print(await client.get_child_device_list())
     print(await client.get_child_device_component_list())
-    print(await client.set_lighting_effect(LightEffectPreset.aurora().effect))
+    print(await client.set_lighting_effect(LightEffectPreset.Aurora.to_effect()))
 
     # plug = PlugDevice(TapoClient(username, password), "<tapo_device_ip>")
     # light = LightDevice(TapoClient(username, password), "<tapo_device_ip>")
