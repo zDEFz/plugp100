@@ -15,4 +15,3 @@ class EnergyInfo:
 
     def get_unmapped_state(self):
         return self.info
-    

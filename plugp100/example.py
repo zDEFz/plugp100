@@ -1,31 +1,29 @@
 import asyncio
+import os
 
-from plugp100 import TapoApiClient, TapoApiClientConfig
-from plugp100.domain.light_effect import LightEffectPreset
+from plugp100.api.light_effect_preset import LightEffectPreset
+from plugp100.api.tapo_client import TapoClient
 
 
 async def main():
     # create generic tapo api
-    config = TapoApiClientConfig("<ip>", "<email>", "<passwd>")
-    sw = TapoApiClient.from_config(config)
-    await sw.login()
-    await sw.off()
-    state = await sw.get_state()
-    print(state.firmware_version)
-    print(state.is_hardware_v2)
+    username = os.getenv('USERNAME', '<tapo_email>')
+    password = os.getenv('PASSWORD', '<tapo_password>')
 
-    # color temperature and brightness
-    await sw.set_color_temperature(4000)
-    await sw.set_brightness(100)
+    client = TapoClient(username, password)
+    await client.login("<tapo_device_ip>")
 
-    # light effect example
-    await sw.set_light_effect(LightEffectPreset.rainbow().effect)
-    state = await sw.get_state()
-    energy_info = await sw.get_energy_usage()
-    power_info = await sw.get_power_info()
-    print(state.get_unmapped_state())
-    print(energy_info and energy_info.get_unmapped_state())
-    print(power_info and power_info.get_unmapped_state())
+    print(await client.get_device_info())
+    print(await client.get_device_usage())
+    print(await client.get_energy_usage())
+    print(await client.get_current_power())
+    print(await client.get_child_device_list())
+    print(await client.get_child_device_component_list())
+    print(await client.set_lighting_effect(LightEffectPreset.aurora().effect))
+
+    # plug = PlugDevice(TapoClient(username, password), "<tapo_device_ip>")
+    # light = LightDevice(TapoClient(username, password), "<tapo_device_ip>")
+    # ledstrip = LedStripDevice(TapoClient(username, password), "<tapo_device_ip>")
 
 
 if __name__ == "__main__":

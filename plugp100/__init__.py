@@ -2,8 +2,6 @@
 import os
 import sys
 
-from .domain.power_info import PowerInfo
-
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # Vendoring: add vendor directory to module search path
@@ -14,27 +12,8 @@ if os.path.exists(vendor_dir):
         sys.path.append(os.path.join(vendor_dir, vendor_path))
 
 from .discover import TapoApiDiscover
-from plugp100.tapo_protocol.params import SwitchParams, LightParams
-from plugp100.api.tapo_api_client import TapoApiClient, TapoApiClientConfig
-from plugp100.domain.energy_info import EnergyInfo
-from plugp100.domain.tapo_api import TapoApi
-from plugp100.domain.tapo_state import TapoDeviceState
-from plugp100.domain.tapo_exception import TapoException, TapoError
-from plugp100.domain.light_effect import LightEffectData, LightEffectPreset
+from plugp100.responses.tapo_exception import TapoException, TapoError
 
-__all__ = [
-    "TapoApi",
-    "TapoApiClient",
-    "LightEffectData",
-    "LightEffectPreset",
-    "TapoApiClientConfig",
-    "TapoDeviceState",
-    "TapoApiDiscover",
-    "EnergyInfo",
-    "TapoDeviceState",
-    "TapoException",
-    "TapoError",
-    "PowerInfo"
-]
+__all__ = []
 
 __version__ = "2.5.1"

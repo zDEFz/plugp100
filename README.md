@@ -12,7 +12,7 @@ The purpose of this fork is to provide the library as PyPi package.
 import asyncio
 
 from plugp100 import TapoApiClient, TapoApiClientConfig
-from plugp100.domain.light_effect import LightEffectPreset
+from plugp100.api.light_effect import LightEffectPreset
 
 
 async def main():

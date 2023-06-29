@@ -2,7 +2,7 @@ import base64
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-from plugp100.tapo_protocol.encryption.helpers import Base64str
+from plugp100.encryption.helpers import Base64str
 
 
 class KeyPair(object):
