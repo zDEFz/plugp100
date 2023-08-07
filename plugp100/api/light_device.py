@@ -1,24 +1,16 @@
-from plugp100.api.tapo_client import TapoClient, Json
+from plugp100.api.base_tapo_device import _BaseTapoDevice
+from plugp100.api.tapo_client import TapoClient
+from plugp100.common.functional.either import Either
 from plugp100.requests.set_device_info.set_light_color_info_params import LightColorDeviceInfoParams
 from plugp100.requests.set_device_info.set_light_info_params import LightDeviceInfoParams
-from plugp100.responses.device_state import LightDeviceState
-from plugp100.common.functional.either import Either
 from plugp100.requests.set_device_info.set_plug_info_params import SetPlugInfoParams
+from plugp100.responses.device_state import LightDeviceState
 
 
-class LightDevice:
+class LightDevice(_BaseTapoDevice):
 
     def __init__(self, api: TapoClient, address: str):
-        self._api = api
-        self._address = address
-
-    async def login(self) -> Either[True, Exception]:
-        """
-        The function `login` attempts to log in to an API using the provided address and returns either `True` if successful
-        or an `Exception` if there is an error.
-        @return: The login method is returning an Either type, which can either be True or an Exception.
-        """
-        return await self._api.login(self._address)
+        super().__init__(api, address)
 
     async def get_state(self) -> Either[LightDeviceState, Exception]:
         """
@@ -83,6 +75,3 @@ class LightDevice:
         @return: an `Either` object, which can either be `True` or an `Exception`.
         """
         return await self._api.set_device_info(LightColorDeviceInfoParams(color_temp=color_temperature))
-
-    async def get_state_as_json(self) -> Either[Json, Exception]:
-        return await self._api.get_device_info()

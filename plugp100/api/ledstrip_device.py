@@ -1,5 +1,6 @@
+from plugp100.api.base_tapo_device import _BaseTapoDevice
 from plugp100.api.light_effect import LightEffect
-from plugp100.api.tapo_client import TapoClient, Json
+from plugp100.api.tapo_client import TapoClient
 from plugp100.common.functional.either import Either
 from plugp100.requests.set_device_info.set_light_color_info_params import LightColorDeviceInfoParams
 from plugp100.requests.set_device_info.set_light_info_params import LightDeviceInfoParams
@@ -7,14 +8,10 @@ from plugp100.requests.set_device_info.set_plug_info_params import SetPlugInfoPa
 from plugp100.responses.device_state import LedStripDeviceState
 
 
-class LedStripDevice:
+class LedStripDevice(_BaseTapoDevice):
 
     def __init__(self, api: TapoClient, address: str):
-        self._api = api
-        self._address = address
-
-    async def login(self) -> Either[True, Exception]:
-        return await self._api.login(self._address)
+        super().__init__(api, address)
 
     async def get_state(self) -> Either[LedStripDeviceState, Exception]:
         return (await self._api.get_device_info()) | LedStripDeviceState.try_from_json
@@ -37,5 +34,8 @@ class LedStripDevice:
     async def set_light_effect(self, effect: LightEffect) -> Either[True, Exception]:
         return await self._api.set_lighting_effect(effect)
 
-    async def get_state_as_json(self) -> Either[Json, Exception]:
-        return await self._api.get_device_info()
+    async def set_light_effect_brightness(self, effect: LightEffect, brightness: int) -> Either[True, Exception]:
+        effect.brightness=brightness
+        effect.bAdjusted = 1
+        effect.enable = 1
+        return await self._api.set_lighting_effect(effect)

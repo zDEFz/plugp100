@@ -1,3 +1,4 @@
+from plugp100.api.base_tapo_device import _BaseTapoDevice
 from plugp100.api.tapo_client import TapoClient, Json
 from plugp100.common.functional.either import Either
 from plugp100.common.utils.json_utils import dataclass_encode_json
@@ -7,19 +8,10 @@ from plugp100.responses.child_device_list import ChildDeviceList
 from plugp100.responses.device_state import PlugDeviceState
 
 
-class PowerStripDevice:
+class PowerStripDevice(_BaseTapoDevice):
 
     def __init__(self, api: TapoClient, address: str):
-        self._api = api
-        self._address = address
-
-    async def login(self) -> Either[True, Exception]:
-        """
-        The function `login` attempts to log in to an API using a given address and returns either `True` if successful or
-        an `Exception` if there is an error.
-        @return: The login method is returning an Either type, which can either be True or an Exception.
-        """
-        return await self._api.login(self._address)
+        super().__init__(api, address)
 
     async def get_state(self) -> Either[PlugDeviceState, Exception]:
         """
@@ -43,6 +35,3 @@ class PowerStripDevice:
 
     async def _control_child(self, device_id: str, request: TapoRequest) -> Either[Json, Exception]:
         return await self._api.control_child(device_id, request)
-
-    async def get_state_as_json(self) -> Either[Json, Exception]:
-        return await self._api.get_device_info()

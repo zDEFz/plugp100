@@ -4,6 +4,7 @@ from asyncio import iscoroutinefunction
 from logging import Logger
 from typing import Callable, Any, List, cast
 
+from plugp100.api.base_tapo_device import _BaseTapoDevice
 from plugp100.api.hub.hub_device_tracker import HubConnectedDeviceTracker, HubDeviceEvent
 from plugp100.api.tapo_client import TapoClient, Json
 from plugp100.common.functional.either import Either, Right, Left
@@ -18,24 +19,15 @@ HubSubscription = Callable[[], Any]
 
 
 # The HubDevice class is a blueprint for creating hub devices.
-class HubDevice:
+class HubDevice(_BaseTapoDevice):
 
     def __init__(self, api: TapoClient, address: str, logger: Logger = None):
-        self._api = api
-        self._address = address
+        super().__init__(api, address)
         self._tracker = HubConnectedDeviceTracker(logger)
         self._is_tracking = False
         self._tracking_tasks: List[asyncio.Task] = []
         self._tracking_subscriptions: List[Callable[[HubDeviceEvent], Any]] = []
         self._logger = logger if logger is not None else logging.getLogger("HubDevice")
-
-    async def login(self) -> Either[True, Exception]:
-        """
-        The function `login` attempts to log in to an API using a given address and returns either `True` if successful or
-        an `Exception` if there is an error.
-        @return: The login method is returning an Either type, which can either be True or an Exception.
-        """
-        return await self._api.login(self._address)
 
     async def turn_alarm_on(self, alarm: PlayAlarmParams = None) -> Either[True, Exception]:
         request = TapoRequest(method='play_alarm', params=dataclass_encode_json(alarm) if alarm is not None else None)

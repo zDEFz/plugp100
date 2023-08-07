@@ -3,7 +3,7 @@ import unittest
 from plugp100.api.hub.hub_device import HubDevice
 from plugp100.api.tapo_client import TapoClient
 from plugp100.common.functional.either import value_or_raise
-from tests.tapo_test_helper import _test_expose_device_info, get_test_config
+from tests.tapo_test_helper import _test_expose_device_info, get_test_config, _test_device_usage
 
 unittest.TestLoader.sortTestMethodsUsing = staticmethod(lambda x, y: -1)
 
@@ -24,6 +24,10 @@ class HubTest(unittest.IsolatedAsyncioTestCase):
     async def test_expose_device_info(self):
         state = value_or_raise(await self._device.get_state()).info
         await _test_expose_device_info(state, self)
+
+    async def test_expose_device_usage_info(self):
+        state = value_or_raise(await self._device.get_device_usage())
+        await _test_device_usage(state, self)
 
     async def test_should_turn_siren_on(self):
         await self._device.turn_alarm_on()

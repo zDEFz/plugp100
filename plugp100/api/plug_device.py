@@ -1,24 +1,16 @@
-from plugp100.api.tapo_client import TapoClient, Json
-from plugp100.responses.device_state import PlugDeviceState
+from plugp100.api.base_tapo_device import _BaseTapoDevice
+from plugp100.api.tapo_client import TapoClient
 from plugp100.common.functional.either import Either
 from plugp100.requests.set_device_info.set_plug_info_params import SetPlugInfoParams
+from plugp100.responses.device_state import PlugDeviceState
 from plugp100.responses.energy_info import EnergyInfo
 from plugp100.responses.power_info import PowerInfo
 
 
-class PlugDevice:
+class PlugDevice(_BaseTapoDevice):
 
     def __init__(self, api: TapoClient, address: str):
-        self._api = api
-        self._address = address
-
-    async def login(self) -> Either[True, Exception]:
-        """
-        The function `login` attempts to log in to an API using a given address and returns either `True` if successful or
-        an `Exception` if there is an error.
-        @return: The login method is returning an Either type, which can either be True or an Exception.
-        """
-        return await self._api.login(self._address)
+        super().__init__(api, address)
 
     async def get_state(self) -> Either[PlugDeviceState, Exception]:
         """
@@ -58,6 +50,3 @@ class PlugDevice:
         @return: an instance of the `Either` class, which can contain either a `PowerInfo` object or an `Exception` object.
         """
         return await self._api.get_current_power()
-
-    async def get_state_as_json(self) -> Either[Json, Exception]:
-        return await self._api.get_device_info()

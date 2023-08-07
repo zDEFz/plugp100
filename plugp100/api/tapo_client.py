@@ -13,7 +13,7 @@ from plugp100.common.utils.http_client import AsyncHttp
 from plugp100.common.utils.json_utils import dataclass_encode_json, Json
 from plugp100.requests.handshake_params import HandshakeParams
 from plugp100.requests.internal.snowflake_id import SnowflakeId
-from plugp100.requests.login_device import LoginDeviceParams
+from plugp100.requests.login_device import LoginDeviceParams, LoginDeviceParamsV2
 from plugp100.requests.secure_passthrough_params import SecurePassthroughParams
 from plugp100.requests.tapo_request import TapoRequest, MultipleRequestParams
 from plugp100.responses.child_device_list import ChildDeviceList
@@ -53,19 +53,21 @@ class TapoClient:
     async def close(self):
         await self._http.close()
 
-    async def login(self, url: str) -> Either[True, Exception]:
+    async def login(self, url: str, use_v2: bool = False) -> Either[True, Exception]:
         """
         The `login` function performs a handshake with a given URL, and if successful, sends a login request with a username
         and password, returning a token if successful or an exception if not.
 
         @param url: The `url` parameter is a string that represents the URL of the login endpoint
         @type url: str
+        @param use_v2: If should login by using v2 api
+        @type use_v2: bool
         @return: The login function returns an Either type, which can either be a Right containing True if the login is
         successful, or a Right containing an Exception if there is an error during the login process.
         """
         handshake = await self._handshake(url)
         if isinstance(handshake, Right):
-            token_or_error = await self._login_request(self._username, self._password)
+            token_or_error = await self._login_request(self._username, self._password, use_v2)
             self._session.token = token_or_error.value if isinstance(token_or_error, Right) else None
             return token_or_error.map(lambda _: True)
 
@@ -193,8 +195,9 @@ class TapoClient:
                 return Left(e)
         return cast(Left, response)
 
-    async def _login_request(self, username: str, password: str) -> Either[str, Exception]:
-        login_device_params = LoginDeviceParams(username, password)
+    async def _login_request(self, username: str, password: str, v2: bool = False) -> Either[str, Exception]:
+        login_device_params = LoginDeviceParams(username, password) if v2 is False else LoginDeviceParamsV2(username,
+                                                                                                            password)
         login_request = TapoRequest.login(login_device_params) \
             .with_request_time_millis(round(time() * 1000))
         response_as_dict = await self._execute_with_passthrough(login_request)
@@ -228,7 +231,8 @@ class TapoClient:
             handshake_key = resp_dict['result']['key']
             tp_link_cipher = TpLinkCipherCryptography.create_from_keypair(handshake_key, key_pair)
 
-            self._session = Session(url, key_pair, tp_link_cipher, cookie_token, token=None, terminal_uuid=str(uuid.uuid4()))
+            self._session = Session(url, key_pair, tp_link_cipher, cookie_token, token=None,
+                                    terminal_uuid=str(uuid.uuid4()))
             return Right(True)
         else:
             return response_or_error
@@ -238,7 +242,8 @@ class TapoClient:
             request: TapoRequest,
             require_token: bool = False
     ) -> Either[TapoResponse[Json], Exception]:
-        request.with_request_id(self._request_id_generator.generate_id()).with_terminal_uuid(self._session.terminal_uuid)
+        request.with_request_id(self._request_id_generator.generate_id()).with_terminal_uuid(
+            self._session.terminal_uuid)
         encrypted_request = self._session.chiper.encrypt(jsons.dumps(request))
         passthrough_request = TapoRequest.secure_passthrough(SecurePassthroughParams(encrypted_request))
         request_body = jsons.loads(jsons.dumps(passthrough_request))
