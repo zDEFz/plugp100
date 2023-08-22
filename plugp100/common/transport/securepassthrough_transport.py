@@ -22,6 +22,7 @@ from plugp100.responses.tapo_response import TapoResponse
 
 @dataclass
 class Session:
+    ip_address: str
     url: str
     key_pair: KeyPair
     chiper: TpLinkCipher
@@ -29,16 +30,19 @@ class Session:
     expire_at: float
     token: Optional[str]
     terminal_uuid: str
-    _is_invalid: bool = False
+    _handshake_invalid: bool = False
 
     def get_cookies(self) -> dict[str, Any]:
         return {"TP_SESSIONID": self.session_id}
 
-    def is_session_expired(self) -> bool:
-        return self._is_invalid or (time.time() * 1000) >= self.expire_at
+    def is_handshake_session_expired(self) -> bool:
+        return (
+            self._handshake_invalid
+            or (self.expire_at - (time.time() * 1000)) <= 40 * 1000
+        )
 
     def invalidate(self):
-        self._is_invalid = True
+        self._handshake_invalid = True
         self.token = None
 
 
@@ -50,11 +54,11 @@ class SecurePassthroughTransport:
         self._http = http
         self._request_id_generator = SnowflakeId(1, 1)
 
-    async def handshake(self, url: str) -> Try[Session]:
+    async def handshake(self, ip_address: str) -> Try[Session]:
         logger.debug("Will perform handshaking...")
         logger.debug("Generating keypair")
 
-        url = f"http://{url}/app"
+        url = f"http://{ip_address}/app"
         key_pair = KeyPair.create_key_pair()
 
         handshake_params = HandshakeParams(key_pair.get_public_key())
@@ -93,6 +97,7 @@ class SecurePassthroughTransport:
             )
             return Try.of(
                 Session(
+                    ip_address=ip_address,
                     url=url,
                     key_pair=key_pair,
                     chiper=tp_link_cipher,
