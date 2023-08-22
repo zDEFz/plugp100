@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import TypeVar, List, Generic, Any, Callable
 
+from plugp100.common.functional.tri import Try
+
 T = TypeVar("T")
 
 
@@ -13,9 +15,11 @@ class TriggerLogResponse(Generic[T]):
     @staticmethod
     def try_from_json(
         json: [str, Any], parse_log_item: Callable[[Any], T]
-    ) -> "TriggerLogResponse[T]":
-        return TriggerLogResponse[T](
-            event_start_id=json["start_id"],
-            size=json["sum"],
-            events=list(map(parse_log_item, json["logs"])),
+    ) -> Try["TriggerLogResponse[T]"]:
+        return Try.of(
+            lambda: TriggerLogResponse[T](
+                event_start_id=json["start_id"],
+                size=json["sum"],
+                events=list(map(parse_log_item, json["logs"])),
+            )
         )

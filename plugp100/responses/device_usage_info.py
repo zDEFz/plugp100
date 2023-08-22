@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Dict, Any
 
-from plugp100.common.functional.either import Right, Either, Left
+from plugp100.common.functional.tri import Try
 
 
 @dataclasses.dataclass
@@ -23,14 +23,11 @@ class DeviceUsageInfo:
     saved_power: Usage
 
     @staticmethod
-    def try_from_json(kwargs: dict[str, Any]) -> Either["DeviceUsageInfo", Exception]:
-        try:
-            return Right(
-                DeviceUsageInfo(
-                    time_usage=Usage(kwargs.get("time_usage", {})),
-                    power_usage=Usage(kwargs.get("power_usage", {})),
-                    saved_power=Usage(kwargs.get("saved_power", {})),
-                )
+    def try_from_json(kwargs: dict[str, Any]) -> Try["DeviceUsageInfo"]:
+        return Try.of(
+            lambda: DeviceUsageInfo(
+                time_usage=Usage(kwargs.get("time_usage", {})),
+                power_usage=Usage(kwargs.get("power_usage", {})),
+                saved_power=Usage(kwargs.get("saved_power", {})),
             )
-        except Exception as e:
-            return Left(e)
+        )

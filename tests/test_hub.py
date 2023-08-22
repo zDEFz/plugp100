@@ -2,7 +2,6 @@ import unittest
 
 from plugp100.api.hub.hub_device import HubDevice
 from plugp100.api.tapo_client import TapoClient
-from plugp100.common.functional.either import value_or_raise
 from tests.tapo_test_helper import (
     _test_expose_device_info,
     get_test_config,
@@ -26,28 +25,28 @@ class HubTest(unittest.IsolatedAsyncioTestCase):
         await self._api.close()
 
     async def test_expose_device_info(self):
-        state = value_or_raise(await self._device.get_state()).info
+        state = (await self._device.get_state()).get_or_raise().info
         await _test_expose_device_info(state, self)
 
     async def test_expose_device_usage_info(self):
-        state = value_or_raise(await self._device.get_device_usage())
+        state = (await self._device.get_device_usage()).get_or_raise()
         await _test_device_usage(state, self)
 
     async def test_should_turn_siren_on(self):
         await self._device.turn_alarm_on()
-        state = value_or_raise(await self._device.get_state())
+        state = (await self._device.get_state()).get_or_raise()
         self.assertEqual(True, state.in_alarm)
 
     async def test_should_turn_siren_off(self):
         await self._device.turn_alarm_off()
-        state = value_or_raise(await self._device.get_state())
+        state = (await self._device.get_state()).get_or_raise()
         self.assertEqual(False, state.in_alarm)
 
     async def test_should_get_supported_alarm_tones(self):
         await self._device.turn_alarm_off()
-        state = value_or_raise(await self._device.get_supported_alarm_tones())
+        state = (await self._device.get_supported_alarm_tones()).get_or_raise()
         self.assertTrue(len(state.tones) > 0)
 
     async def test_should_get_children(self):
-        state = value_or_raise(await self._device.get_children())
+        state = (await self._device.get_children()).get_or_raise()
         self.assertTrue(len(state.get_device_ids()) > 0)

@@ -1,6 +1,6 @@
 from plugp100.api.base_tapo_device import _BaseTapoDevice
 from plugp100.api.tapo_client import TapoClient
-from plugp100.common.functional.either import Either
+from plugp100.common.functional.tri import Try
 from plugp100.requests.set_device_info.set_light_color_info_params import (
     LightColorDeviceInfoParams,
 )
@@ -15,30 +15,32 @@ class LightDevice(_BaseTapoDevice):
     def __init__(self, api: TapoClient, address: str):
         super().__init__(api, address)
 
-    async def get_state(self) -> Either[LightDeviceState, Exception]:
+    async def get_state(self) -> Try[LightDeviceState]:
         """
         The function `get_state` asynchronously retrieves the device information from an API and returns either the device
         state or an exception.
         @return: an instance of the `Either` class, which can hold either a `LightDeviceState` object or an `Exception`
         object.
         """
-        return (await self._api.get_device_info()) | LightDeviceState.try_from_json
+        return (await self._api.get_device_info()).flat_map(
+            LightDeviceState.try_from_json
+        )
 
-    async def on(self) -> Either[True, Exception]:
+    async def on(self) -> Try[True]:
         """
         The function `on` turns on light
         @return: an instance of the `Either` class, which can hold either a `True` value or an `Exception` object.
         """
         return await self._api.set_device_info(SetPlugInfoParams(True))
 
-    async def off(self) -> Either[True, Exception]:
+    async def off(self) -> Try[True]:
         """
         The function `off` turns off light
         @return: an `Either` object, which can either be `True` or an `Exception`.
         """
         return await self._api.set_device_info(SetPlugInfoParams(False))
 
-    async def set_brightness(self, brightness: int) -> Either[True, Exception]:
+    async def set_brightness(self, brightness: int) -> Try[True]:
         """
         The function sets the brightness of a device using an API call and returns either True if successful or an Exception
         if there is an error.
@@ -52,9 +54,7 @@ class LightDevice(_BaseTapoDevice):
             LightDeviceInfoParams(brightness=brightness)
         )
 
-    async def set_hue_saturation(
-        self, hue: int, saturation: int
-    ) -> Either[True, Exception]:
+    async def set_hue_saturation(self, hue: int, saturation: int) -> Try[True]:
         """
         The function sets the hue and saturation of a light device using the provided values.
 
@@ -73,9 +73,7 @@ class LightDevice(_BaseTapoDevice):
             LightColorDeviceInfoParams(hue=hue, saturation=saturation, color_temp=0)
         )
 
-    async def set_color_temperature(
-        self, color_temperature: int
-    ) -> Either[True, Exception]:
+    async def set_color_temperature(self, color_temperature: int) -> Try[True]:
         """
         The function sets the color temperature of a light device using the provided color temperature value.
 

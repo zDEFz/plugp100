@@ -26,6 +26,14 @@ class ChildDeviceList(object):
             if child.get("device_id", None) is not None
         }
 
+    def find_device(self, model_like: str) -> Set[str]:
+        return {
+            child.get("device_id")
+            for child in self.child_device_list
+            if child.get("device_id", None) is not None
+            and model_like.lower() in child.get("model", "").lower()
+        }
+
     def get_children(self, parse: Callable[[dict[str, Any]], Child]) -> List[Child]:
         return list(map(lambda x: parse(x), self.child_device_list))
 

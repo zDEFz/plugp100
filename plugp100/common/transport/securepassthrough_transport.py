@@ -4,12 +4,13 @@ import time
 import uuid
 from dataclasses import dataclass
 from hashlib import md5
-from typing import Optional, cast, Any
+from typing import Optional, Any
 
 import jsons
 
-from plugp100.common.functional.either import Either, Right, Left
+from plugp100.common.functional.tri import Try
 from plugp100.common.utils.http_client import AsyncHttp
+from plugp100.common.utils.json_utils import Json
 from plugp100.encryption.key_pair import KeyPair
 from plugp100.encryption.tp_link_cipher import TpLinkCipher, TpLinkCipherCryptography
 from plugp100.requests.handshake_params import HandshakeParams
@@ -49,7 +50,7 @@ class SecurePassthroughTransport:
         self._http = http
         self._request_id_generator = SnowflakeId(1, 1)
 
-    async def handshake(self, url: str) -> Either[Session, Exception]:
+    async def handshake(self, url: str) -> Try[Session]:
         logger.debug("Will perform handshaking...")
         logger.debug("Generating keypair")
 
@@ -69,7 +70,7 @@ class SecurePassthroughTransport:
         logger.debug(f"Device responded with: {resp_dict}")
         response_or_error = TapoResponse.try_from_json(resp_dict).map(lambda _: True)
 
-        if isinstance(response_or_error, Right):
+        if response_or_error.is_success():
             handshake_cookies = {
                 cookie.key: cookie.value for cookie in response.cookies.values()
             }
@@ -90,7 +91,7 @@ class SecurePassthroughTransport:
             terminal_uuid = base64.b64encode(md5(uuid.uuid4().bytes).digest()).decode(
                 "UTF-8"
             )
-            return Right(
+            return Try.of(
                 Session(
                     url=url,
                     key_pair=key_pair,
@@ -102,9 +103,11 @@ class SecurePassthroughTransport:
                 )
             )
         else:
-            return Left(cast(Left, response_or_error).error)
+            return response_or_error
 
-    async def send(self, request: TapoRequest, session: Session):
+    async def send(
+        self, request: TapoRequest, session: Session
+    ) -> Try[TapoResponse[Json]]:
         request.with_request_id(
             self._request_id_generator.generate_id()
         ).with_terminal_uuid(session.terminal_uuid)
@@ -135,7 +138,7 @@ class SecurePassthroughTransport:
                     session.chiper.decrypt(response.result["response"])
                 )
             )
-            .bind(
+            .flat_map(
                 lambda decrypted_response: TapoResponse.try_from_json(decrypted_response)
             )
         )

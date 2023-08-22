@@ -5,7 +5,7 @@ from typing import Optional, Any, cast
 import aiohttp
 
 from plugp100.api.light_effect import LightEffect
-from plugp100.common.functional.either import Either, Right, Left
+from plugp100.common.functional.tri import Try, Success, Failure
 from plugp100.common.transport.securepassthrough_transport import (
     SecurePassthroughTransport,
     Session,
@@ -43,7 +43,7 @@ class TapoClient:
     async def close(self):
         await self._http.close()
 
-    async def login(self, url: str) -> Either[True, Exception]:
+    async def login(self, url: str) -> Try[True]:
         """
         The function `login` attempts to log in to an API using a given address and returns either `True` if successful or
         an `Exception` if there is an error.
@@ -53,21 +53,19 @@ class TapoClient:
         login_result = await self._login_with_version(
             url, self._username, self._password, use_v2=False
         )
-        if login_result.is_left():
+        if login_result.is_failure():
             return await self._login_with_version(
                 url, self._username, self._password, use_v2=True
             )
         return login_result
 
-    async def execute_raw_request(
-        self, request: "TapoRequest"
-    ) -> Either[Json, Exception]:
+    async def execute_raw_request(self, request: "TapoRequest") -> Try[Json]:
         request.with_terminal_uuid(self._session.terminal_uuid).with_request_time_millis(
             round(time() * 1000)
         )
         return (await self._send_safe_passthrough(request)).map(lambda x: x.result)
 
-    async def get_device_info(self) -> Either[Json, Exception]:
+    async def get_device_info(self) -> Try[Json]:
         """
         The function `get_device_info` sends a request to retrieve device information and returns the result or an
         exception.
@@ -78,7 +76,7 @@ class TapoClient:
             lambda x: x.result
         )
 
-    async def get_energy_usage(self) -> Either[EnergyInfo, Exception]:
+    async def get_energy_usage(self) -> Try[EnergyInfo]:
         """
         The function `get_energy_usage` makes a request to get energy usage information and returns either the energy info
         or an exception.
@@ -88,7 +86,7 @@ class TapoClient:
         response = await self._send_safe_passthrough(get_energy_request)
         return response.map(lambda x: EnergyInfo(x.result))
 
-    async def get_current_power(self) -> Either[PowerInfo, Exception]:
+    async def get_current_power(self) -> Try[PowerInfo]:
         """
         The function `get_current_power` asynchronously retrieves the current power information and returns it as a
         `PowerInfo` object, or an `Exception` if an error occurs.
@@ -98,7 +96,7 @@ class TapoClient:
         response = await self._send_safe_passthrough(get_current_power)
         return response.map(lambda x: PowerInfo(x.result))
 
-    async def set_device_info(self, device_info: Any) -> Either[True, Exception]:
+    async def set_device_info(self, device_info: Any) -> Try[True]:
         """
         The function `set_device_info` encodes the `device_info` object into JSON format and returns either `True` or an
         `Exception`.
@@ -109,9 +107,7 @@ class TapoClient:
         """
         return await self._set_device_info(dataclass_encode_json(device_info))
 
-    async def set_lighting_effect(
-        self, light_effect: LightEffect
-    ) -> Either[True, Exception]:
+    async def set_lighting_effect(self, light_effect: LightEffect) -> Try[True]:
         """
         The function `set_lighting_effect` sets a lighting effect for a device and returns either `True` or an exception.
 
@@ -128,7 +124,7 @@ class TapoClient:
         response = await self._send_safe_passthrough(request)
         return response.map(lambda _: True)
 
-    async def get_child_device_list(self) -> Either[ChildDeviceList, Exception]:
+    async def get_child_device_list(self) -> Try[ChildDeviceList]:
         """
         The function `get_child_device_list` retrieves a list of child devices asynchronously and returns either the list or
         an exception.
@@ -139,10 +135,11 @@ class TapoClient:
             .with_terminal_uuid(self._session.terminal_uuid)
             .with_request_time_millis(round(time() * 1000))
         )
-        response = await self._send_safe_passthrough(request)
-        return response.map(lambda x: ChildDeviceList.try_from_json(**x.result))
+        return (await self._send_safe_passthrough(request)).map(
+            lambda x: ChildDeviceList.try_from_json(**x.result)
+        )
 
-    async def get_child_device_component_list(self) -> Either[Json, Exception]:
+    async def get_child_device_component_list(self) -> Try[Json]:
         """
         The function `get_child_device_component_list` retrieves a list of child device components asynchronously and
         returns either the JSON response or an exception.
@@ -153,12 +150,9 @@ class TapoClient:
             .with_terminal_uuid(self._session.terminal_uuid)
             .with_request_time_millis(round(time() * 1000))
         )
-        response = await self._send_safe_passthrough(request)
-        return response.map(lambda x: x.result)
+        return (await self._send_safe_passthrough(request)).map(lambda x: x.result)
 
-    async def control_child(
-        self, child_id: str, request: TapoRequest
-    ) -> Either[Json, Exception]:
+    async def control_child(self, child_id: str, request: TapoRequest) -> Try[Json]:
         """
         The function `control_child` is an asynchronous method that sends a control request to a child device and returns
         the response or an exception.
@@ -177,22 +171,22 @@ class TapoClient:
         )
         request = TapoRequest.control_child(child_id, multiple_request)
         response = await self._send_safe_passthrough(request)
-        if isinstance(response, Right):
+        if response.is_success():
             try:
-                responses = response.value.result["responseData"]["result"]["responses"]
+                responses = response.get().result["responseData"]["result"]["responses"]
                 if len(responses) > 0:
                     return (
-                        Right(responses[0]["result"])
+                        Success(responses[0]["result"])
                         if "result" in responses[0]
-                        else Right(responses[0])
+                        else Success(responses[0])
                     )
                 else:
-                    return Left(Exception("Empty responses from child"))
+                    return Failure(Exception("Empty responses from child"))
             except Exception as e:
-                return Left(e)
-        return cast(Left, response)
+                return Failure(e)
+        return cast(Failure, response)
 
-    async def _set_device_info(self, device_info: Json) -> Either[True, Exception]:
+    async def _set_device_info(self, device_info: Json) -> Try[True]:
         request = (
             TapoRequest.set_device_info(device_info)
             .with_terminal_uuid(self._session.terminal_uuid)
@@ -203,7 +197,7 @@ class TapoClient:
 
     async def _send_safe_passthrough(
         self, request: TapoRequest, is_retry: bool = False
-    ) -> Either[TapoResponse[dict[str, Any]], Exception]:
+    ) -> Try[TapoResponse[dict[str, Any]]]:
         """
         Send a passthrough request by renewing session if expired.
         @param request:
@@ -211,23 +205,23 @@ class TapoClient:
         """
         if self._session.token is None or self._session.is_session_expired():
             try_recover_result = await self.login(self._session.url)
-            if try_recover_result.is_left():
+            if try_recover_result.is_failure():
                 return try_recover_result
 
         response = await self._passthrough.send(request, self._session)
         if (
             not is_retry
-            and isinstance(response, Left)
-            and isinstance(response.error, TapoException)
+            and response.is_failure()
+            and isinstance(response.error(), TapoException)
         ):
-            if response.error.error_code == TapoError.ERR_SESSION_TIMEOUT:
+            if response.error().error_code == TapoError.ERR_SESSION_TIMEOUT:
                 self._session.invalidate()
                 return await self._send_safe_passthrough(request, is_retry=True)
         return response
 
     async def _login_with_version(
         self, url: str, username: str, password: str, use_v2: bool = False
-    ) -> Either[True, Exception]:
+    ) -> Try[True]:
         """
         The `login` function performs a handshake with a given URL, and if successful, sends a login request with a username
         and password, returning a token if successful or an exception if not.
@@ -240,21 +234,18 @@ class TapoClient:
         successful, or a Right containing an Exception if there is an error during the login process.
         """
         session_or_error = await self._passthrough.handshake(url)
-        if isinstance(session_or_error, Right):
-            self._session = session_or_error.value
-            login_device_params = (
-                LoginDeviceParams(username, password)
-                if use_v2 is False
-                else LoginDeviceParamsV2(username, password)
-            )
-            login_request = TapoRequest.login(
-                login_device_params
+        if session_or_error.is_success():
+            self._session = session_or_error.get()
+            login_request = (
+                TapoRequest.login_v2(username, password)
+                if use_v2 is True
+                else TapoRequest.login(username, password)
             ).with_request_time_millis(round(time() * 1000))
-            response_as_dict = await self._passthrough.send(login_request, self._session)
-            token_or_error = response_as_dict.map(lambda x: x.result["token"])
-            self._session.token = (
-                token_or_error.value if isinstance(token_or_error, Right) else None
+            token = (await self._passthrough.send(login_request, self._session)).map(
+                lambda x: x.result["token"]
             )
-            return token_or_error.map(lambda _: True)
+            if token.is_success():
+                self._session.token = token.get()
+            return token.map(lambda _: True)
 
         return session_or_error.map(lambda _: True)
