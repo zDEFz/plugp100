@@ -215,12 +215,12 @@ class TapoClient:
         ):
             if response.error().error_code == TapoError.ERR_SESSION_TIMEOUT.value:
                 logger.warning(
-                    "Session timeout, invalidate it, trying new login and request"
+                    "Session timeout, invalidate it, retrying with new session"
                 )
                 return await self.retry_with_new_session(request)
             elif response.error().error_code == TapoError.ERR_DEVICE.value:
                 logger.warning(
-                    "Error device, probably exceeding rate limit, creating new session"
+                    "Error device, probably exceeding rate limit, retrying with new session"
                 )
                 return await self.retry_with_new_session(request)
 
