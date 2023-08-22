@@ -3,6 +3,7 @@ from plugp100.common.functional.tri import Try
 from plugp100.common.utils.json_utils import Json
 from plugp100.requests.tapo_request import TapoRequest
 from plugp100.responses.device_usage_info import DeviceUsageInfo
+from plugp100.responses.time_info import TimeInfo
 
 
 class _BaseTapoDevice:
@@ -31,6 +32,13 @@ class _BaseTapoDevice:
         return await self._api.execute_raw_request(
             TapoRequest(method=method, params=params)
         )
+
+    async def get_device_time(self) -> Try[TimeInfo]:
+        return (
+            await self._api.execute_raw_request(
+                TapoRequest(method="get_device_time", params=None)
+            )
+        ).flat_map(TimeInfo.try_from_json)
 
     async def get_state_as_json(self) -> Try[Json]:
         return await self._api.get_device_info()
