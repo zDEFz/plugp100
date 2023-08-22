@@ -22,7 +22,6 @@ from plugp100.responses.tapo_response import TapoResponse
 
 @dataclass
 class Session:
-    ip_address: str
     url: str
     key_pair: KeyPair
     chiper: TpLinkCipher
@@ -54,11 +53,10 @@ class SecurePassthroughTransport:
         self._http = http
         self._request_id_generator = SnowflakeId(1, 1)
 
-    async def handshake(self, ip_address: str) -> Try[Session]:
+    async def handshake(self, url: str) -> Try[Session]:
         logger.debug("Will perform handshaking...")
         logger.debug("Generating keypair")
 
-        url = f"http://{ip_address}/app"
         key_pair = KeyPair.create_key_pair()
 
         handshake_params = HandshakeParams(key_pair.get_public_key())
@@ -97,7 +95,6 @@ class SecurePassthroughTransport:
             )
             return Try.of(
                 Session(
-                    ip_address=ip_address,
                     url=url,
                     key_pair=key_pair,
                     chiper=tp_link_cipher,

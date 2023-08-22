@@ -43,7 +43,10 @@ class TapoClient:
     async def close(self):
         await self._http.close()
 
-    async def login(self, url: str) -> Try[True]:
+    async def login(self, ip_address: str) -> Try[True]:
+        return await self.login_with_url(f"http://{ip_address}/app")
+
+    async def login_with_url(self, url: str) -> Try[True]:
         """
         The function `login` attempts to log in to an API using a given address and returns either `True` if successful or
         an `Exception` if there is an error.
@@ -225,20 +228,20 @@ class TapoClient:
             return response
 
     async def _login_with_version(
-        self, ip_address: str, username: str, password: str, use_v2: bool = False
+        self, url: str, username: str, password: str, use_v2: bool = False
     ) -> Try[True]:
         """
         The `login` function performs a handshake with a given URL, and if successful, sends a login request with a username
         and password, returning a token if successful or an exception if not.
 
-        @param ip_address: The `ip_address` parameter is a string that represents the IP ADDRESS of the login endpoint
-        @type ip_address: str
+        @param url: The `url` parameter is a string that represents the url of the login endpoint
+        @type url: str
         @param use_v2: If should login by using v2 api
         @type use_v2: bool
         @return: The login function returns an Either type, which can either be a Right containing True if the login is
         successful, or a Right containing an Exception if there is an error during the login process.
         """
-        session_or_error = await self._passthrough.handshake(ip_address)
+        session_or_error = await self._passthrough.handshake(url)
         if session_or_error.is_success():
             self._session = session_or_error.get()
             if not self._session.is_handshake_session_expired():
@@ -255,13 +258,13 @@ class TapoClient:
                 return token.map(lambda _: True)
             else:
                 return await self._login_with_version(
-                    ip_address, username, password, use_v2=use_v2
+                    url, username, password, use_v2=use_v2
                 )
 
         return session_or_error.map(lambda _: True)
 
     async def retry_with_new_session(self, request: TapoRequest):
         self._session.invalidate()
-        return (await self.login(self._session.ip_address)).flat_map(
+        return (await self.login(self._session.url)).flat_map(
             lambda _: asyncio.run(self._send_safe_passthrough(request, is_retry=True))
         )
