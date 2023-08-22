@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TypeVar, Generic, Optional, Any
 
 from plugp100.common.utils.json_utils import Json
-from plugp100.responses.tapo_exception import TapoException
+from plugp100.responses.tapo_exception import TapoException, TapoError
 from plugp100.common.functional.either import Either, Right, Left
 
 T = TypeVar("T")

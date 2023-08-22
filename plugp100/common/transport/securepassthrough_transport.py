@@ -1,9 +1,10 @@
 import base64
 import logging
+import time
 import uuid
 from dataclasses import dataclass
 from hashlib import md5
-from typing import Optional, cast
+from typing import Optional, cast, Any
 
 import jsons
 
@@ -23,9 +24,21 @@ class Session:
     url: str
     key_pair: KeyPair
     chiper: TpLinkCipher
-    cookie_token: Optional[str]
+    session_id: str
+    expire_at: float
     token: Optional[str]
     terminal_uuid: str
+    _is_invalid: bool = False
+
+    def get_cookies(self) -> dict[str, Any]:
+        return {"TP_SESSIONID": self.session_id}
+
+    def is_session_expired(self) -> bool:
+        return self._is_invalid or (time.time() * 1000) >= self.expire_at
+
+    def invalidate(self):
+        self._is_invalid = True
+        self.token = None
 
 
 logger = logging.getLogger(__name__)
@@ -57,8 +70,16 @@ class SecurePassthroughTransport:
         response_or_error = TapoResponse.try_from_json(resp_dict).map(lambda _: True)
 
         if isinstance(response_or_error, Right):
-            cookie_token = response.cookies.get("TP_SESSIONID").value
-            logger.debug(f"Got TP_SESSIONID token: ...{cookie_token[5:]}")
+            handshake_cookies = {
+                cookie.key: cookie.value for cookie in response.cookies.values()
+            }
+            logger.debug(f"Got Handshake cookies: ...{handshake_cookies}")
+            session_id = [
+                value for key, value in handshake_cookies.items() if "SESSIONID" in key
+            ][0]
+            timeout = int(
+                [value for key, value in handshake_cookies.items() if "TIMEOUT" in key][0]
+            )
 
             logger.debug("Decoding handshake key...")
             handshake_key = resp_dict["result"]["key"]
@@ -71,10 +92,11 @@ class SecurePassthroughTransport:
             )
             return Right(
                 Session(
-                    url,
-                    key_pair,
-                    tp_link_cipher,
-                    cookie_token,
+                    url=url,
+                    key_pair=key_pair,
+                    chiper=tp_link_cipher,
+                    session_id=session_id,
+                    expire_at=(time.time() * 1000) + (timeout * 1000),
                     token=None,
                     terminal_uuid=terminal_uuid,
                 )
@@ -83,7 +105,6 @@ class SecurePassthroughTransport:
             return Left(cast(Left, response_or_error).error)
 
     async def send(self, request: TapoRequest, session: Session):
-        assert session is not None
         request.with_request_id(
             self._request_id_generator.generate_id()
         ).with_terminal_uuid(session.terminal_uuid)
@@ -102,7 +123,7 @@ class SecurePassthroughTransport:
             if session.token is None
             else f"{session.url}?token={session.token}",
             request_body,
-            {"TP_SESSIONID": session.cookie_token},
+            session.get_cookies(),
         )
         response_as_dict: dict = await response_encrypted.json(content_type=None)
         logger.debug(f"Device responded with: {response_as_dict}")
