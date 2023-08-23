@@ -14,6 +14,7 @@ from plugp100.common.transport.securepassthrough_transport import (
 from plugp100.common.utils.http_client import AsyncHttp
 from plugp100.common.utils.json_utils import dataclass_encode_json, Json
 from plugp100.requests.tapo_request import TapoRequest, MultipleRequestParams
+from plugp100.requests.thing_rule_timer import ThingRuleTimer
 from plugp100.responses.child_device_list import ChildDeviceList
 from plugp100.responses.energy_info import EnergyInfo
 from plugp100.responses.power_info import PowerInfo
@@ -188,6 +189,9 @@ class TapoClient:
             except Exception as e:
                 return Failure(e)
         return cast(Failure, response)
+
+    async def add_countdown_rule(self):
+        TapoRequest(method="add_countdown_rule", params=ThingRuleTimer())
 
     async def _set_device_info(self, device_info: Json) -> Try[True]:
         request = (
