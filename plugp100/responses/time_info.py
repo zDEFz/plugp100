@@ -1,8 +1,8 @@
 import dataclasses
-from typing import Any
 from datetime import datetime
+from typing import Any
 
-from plugp100.common.functional.either import Right, Either, Left
+from plugp100.common.functional.tri import Try
 
 
 @dataclasses.dataclass
@@ -19,14 +19,11 @@ class TimeInfo:
         return datetime.fromtimestamp(self.timestamp, tz=ZoneInfo(self.region))
 
     @staticmethod
-    def try_from_json(kwargs: dict[str, Any]) -> Either["TimeInfo", Exception]:
-        try:
-            return Right(
-                TimeInfo(
-                    time_diff=kwargs.get("time_diff"),
-                    timestamp=kwargs.get("timestamp"),
-                    region=kwargs.get("region"),
-                )
+    def try_from_json(kwargs: dict[str, Any]) -> Try["TimeInfo"]:
+        return Try.of(
+            lambda: TimeInfo(
+                time_diff=kwargs.get("time_diff"),
+                timestamp=kwargs.get("timestamp"),
+                region=kwargs.get("region"),
             )
-        except Exception as e:
-            return Left(e)
+        )

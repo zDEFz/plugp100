@@ -7,6 +7,7 @@ class TapoError(Enum):
     ERR_REQUEST_LEN_ERROR = -1006
     ERR_CLOUD_FAILED = -1007
     ERR_PARAMS = -1008
+    ERR_DEVICE = -1301
     ERR_SESSION_PARAM = -1101
     INVALID_PUBLIC_KEY = -1010
     INVALID_CREDENTIAL = -1501
@@ -39,6 +40,7 @@ _error_message = {
     TapoError.ERR_HTTP_TRANSPORT_FAILED: "Http transport error",
     TapoError.ERR_MULTI_REQUEST_FAILED: "Multirequest failed",
     TapoError.ERR_SESSION_TIMEOUT: "Session Timeout",
+    TapoError.ERR_DEVICE: "Rate limit exceeded",
 }
 
 

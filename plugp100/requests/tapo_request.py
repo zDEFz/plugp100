@@ -3,7 +3,7 @@ from typing import TypeVar, Any, List
 
 from plugp100.api.light_effect import LightEffect
 from plugp100.requests.handshake_params import HandshakeParams
-from plugp100.requests.login_device import LoginDeviceParams
+from plugp100.requests.login_device import LoginDeviceParams, LoginDeviceParamsV2
 from plugp100.requests.secure_passthrough_params import SecurePassthroughParams
 from plugp100.requests.trigger_logs_params import GetTriggerLogsParams
 
@@ -16,8 +16,16 @@ class TapoRequest(object):
         return TapoRequest(method="handshake", params=params)
 
     @staticmethod
-    def login(params: LoginDeviceParams) -> "TapoRequest":
-        return TapoRequest(method="login_device", params=params)
+    def login(username: str, password: str) -> "TapoRequest":
+        return TapoRequest(
+            method="login_device", params=LoginDeviceParams(username, password)
+        )
+
+    @staticmethod
+    def login_v2(username: str, password: str) -> "TapoRequest":
+        return TapoRequest(
+            method="login_device", params=LoginDeviceParamsV2(username, password)
+        )
 
     @staticmethod
     def secure_passthrough(params: SecurePassthroughParams) -> "TapoRequest":

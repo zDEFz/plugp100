@@ -14,7 +14,6 @@ async def main():
     await client.login("<tapo_device_ip>")
 
     print(await client.get_device_info())
-    print(await client.get_device_usage())
     print(await client.get_energy_usage())
     print(await client.get_current_power())
     print(await client.get_child_device_list())

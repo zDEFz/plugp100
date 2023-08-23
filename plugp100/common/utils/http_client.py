@@ -14,6 +14,7 @@ class AsyncHttp:
         }
 
     async def async_make_post(self, url, json: Any) -> aiohttp.ClientResponse:
+        self.session.cookie_jar.clear()
         async with self.session.post(
             url, json=json, headers=self.common_headers
         ) as response:

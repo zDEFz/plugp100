@@ -1,12 +1,12 @@
 import base64
 import enum
 from dataclasses import dataclass
-from datetime import time, datetime
+from datetime import datetime
 from typing import Any
 
 import semantic_version
 
-from plugp100.common.functional.either import Either, Right, Left
+from plugp100.common.functional.tri import Try
 
 
 class TemperatureUnit(enum.Enum):
@@ -40,11 +40,8 @@ class T31DeviceState:
     temperature_unit: TemperatureUnit
 
     @staticmethod
-    def from_json(kwargs: dict[str, Any]) -> Either["T31DeviceState", Exception]:
-        try:
-            return Right(T31DeviceState(**kwargs))
-        except Exception as e:
-            return Left(e)
+    def from_json(kwargs: dict[str, Any]) -> Try["T31DeviceState"]:
+        return Try.of(lambda: T31DeviceState(**kwargs))
 
     def __init__(self, **kwargs):
         self.firmware_version = kwargs["fw_ver"]
@@ -70,7 +67,7 @@ class T31DeviceState:
                 member
                 for member in TemperatureUnit
                 if member.value == kwargs.get("temp_unit")
-            ],
+            ].__iter__(),
             TemperatureUnit.CELSIUS,
         )
 
@@ -92,16 +89,10 @@ class TemperatureHumidityRecordsRaw:
     past24h_humidity: list[int]
     past24_temperature_exceptions: list[float]
     past24_temperature: list[float]
-    temperature_unit: TemperatureUnit
 
     @staticmethod
-    def from_json(
-        kwargs: dict[str, Any]
-    ) -> Either["TemperatureHumidityRecordsRaw", Exception]:
-        try:
-            return Right(TemperatureHumidityRecordsRaw(**kwargs))
-        except Exception as e:
-            return Left(e)
+    def from_json(kwargs: dict[str, Any]) -> Try["TemperatureHumidityRecordsRaw"]:
+        return Try.of(lambda: TemperatureHumidityRecordsRaw(**kwargs))
 
     def __init__(self, **kwargs):
         self.local_time = datetime.fromtimestamp(kwargs.get("local_time"))

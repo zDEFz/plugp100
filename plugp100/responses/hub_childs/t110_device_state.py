@@ -4,7 +4,7 @@ from typing import Any, Union
 
 import semantic_version
 
-from plugp100.common.functional.either import Either, Right, Left
+from plugp100.common.functional.tri import Try
 
 
 @dataclass
@@ -26,29 +26,26 @@ class T110SmartDoorState:
     is_open: bool
 
     @staticmethod
-    def try_from_json(kwargs: dict[str, Any]) -> Either["T110SmartDoorState", Exception]:
-        try:
-            return Right(
-                T110SmartDoorState(
-                    firmware_version=kwargs["fw_ver"],
-                    hardware_version=kwargs["hw_ver"],
-                    device_id=kwargs["device_id"],
-                    parent_device_id=kwargs["parent_device_id"],
-                    mac=kwargs["mac"],
-                    type=kwargs["type"],
-                    model=kwargs["model"],
-                    status=kwargs.get("status", False),
-                    rssi=kwargs.get("rssi", 0),
-                    signal_level=kwargs.get("signal_level", 0),
-                    at_low_battery=kwargs.get("at_low_battery", False),
-                    nickname=base64.b64decode(kwargs["nickname"]).decode("UTF-8"),
-                    last_onboarding_timestamp=kwargs.get("lastOnboardingTimestamp", 0),
-                    report_interval_seconds=kwargs.get("report_interval", 0),
-                    is_open=kwargs.get("open"),
-                )
+    def try_from_json(kwargs: dict[str, Any]) -> Try["T110SmartDoorState"]:
+        return Try.of(
+            lambda: T110SmartDoorState(
+                firmware_version=kwargs["fw_ver"],
+                hardware_version=kwargs["hw_ver"],
+                device_id=kwargs["device_id"],
+                parent_device_id=kwargs["parent_device_id"],
+                mac=kwargs["mac"],
+                type=kwargs["type"],
+                model=kwargs["model"],
+                status=kwargs.get("status", False),
+                rssi=kwargs.get("rssi", 0),
+                signal_level=kwargs.get("signal_level", 0),
+                at_low_battery=kwargs.get("at_low_battery", False),
+                nickname=base64.b64decode(kwargs["nickname"]).decode("UTF-8"),
+                last_onboarding_timestamp=kwargs.get("lastOnboardingTimestamp", 0),
+                report_interval_seconds=kwargs.get("report_interval", 0),
+                is_open=kwargs.get("open"),
             )
-        except Exception as e:
-            return Left(e)
+        )
 
     def get_semantic_firmware_version(self) -> semantic_version.Version:
         pieces = self.firmware_version.split("Build")

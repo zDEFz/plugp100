@@ -10,7 +10,7 @@ from plugp100.api.hub.hub_device_tracker import (
     HubDeviceEvent,
 )
 from plugp100.api.tapo_client import TapoClient, Json
-from plugp100.common.functional.either import Either, Right, Left
+from plugp100.common.functional.tri import Try
 from plugp100.common.utils.json_utils import dataclass_encode_json
 from plugp100.requests.set_device_info.play_alarm_params import PlayAlarmParams
 from plugp100.requests.tapo_request import TapoRequest
@@ -31,47 +31,43 @@ class HubDevice(_BaseTapoDevice):
         self._tracking_subscriptions: List[Callable[[HubDeviceEvent], Any]] = []
         self._logger = logger if logger is not None else logging.getLogger("HubDevice")
 
-    async def turn_alarm_on(
-        self, alarm: PlayAlarmParams = None
-    ) -> Either[True, Exception]:
+    async def turn_alarm_on(self, alarm: PlayAlarmParams = None) -> Try[True]:
         request = TapoRequest(
             method="play_alarm",
             params=dataclass_encode_json(alarm) if alarm is not None else None,
         )
         return (await self._api.execute_raw_request(request)).map(lambda _: True)
 
-    async def turn_alarm_off(self) -> Either[True, Exception]:
+    async def turn_alarm_off(self) -> Try[True]:
         return (
             await self._api.execute_raw_request(
                 TapoRequest(method="stop_alarm", params=None)
             )
         ).map(lambda _: True)
 
-    async def get_state(self) -> Either[HubDeviceState, Exception]:
+    async def get_state(self) -> Try[HubDeviceState]:
         """
         The function `get_state` asynchronously retrieves device information and returns either the device state or an
         exception.
         @return: an instance of the `Either` class, which can hold either a `HubDeviceState` object or an `Exception`
         object.
         """
-        return (await self._api.get_device_info()) | HubDeviceState.try_from_json
+        return (await self._api.get_device_info()).flat_map(HubDeviceState.try_from_json)
 
-    async def get_supported_alarm_tones(self) -> Either[AlarmTypeList, Exception]:
+    async def get_supported_alarm_tones(self) -> Try[AlarmTypeList]:
         return (
             await self._api.execute_raw_request(
                 TapoRequest(method="get_support_alarm_type_list", params=None)
             )
-        ) | AlarmTypeList.try_from_json
+        ).flat_map(AlarmTypeList.try_from_json)
 
-    async def get_state_as_json(self) -> Either[Json, Exception]:
+    async def get_state_as_json(self) -> Try[Json]:
         return await self._api.get_device_info()
 
-    async def get_children(self) -> Either[ChildDeviceList, Exception]:
+    async def get_children(self) -> Try[ChildDeviceList]:
         return await self._api.get_child_device_list()
 
-    async def control_child(
-        self, device_id: str, request: TapoRequest
-    ) -> Either[Json, Exception]:
+    async def control_child(self, device_id: str, request: TapoRequest) -> Try[Json]:
         """
         The function `control_child` is an asynchronous method that takes a device ID and a TapoRequest object as
         parameters, and it returns either a JSON response or an Exception.
@@ -137,12 +133,12 @@ class HubDevice(_BaseTapoDevice):
     async def _poll(self, interval_millis: int):
         while self._is_tracking:
             new_state = await self._api.get_child_device_list()
-            if isinstance(new_state, Right):
+            if new_state.is_success():
                 await self._tracker.notify_state_update(
-                    cast(ChildDeviceList, new_state.value).get_device_ids()
+                    cast(ChildDeviceList, new_state.get()).get_device_ids()
                 )
-            elif isinstance(new_state, Left):
-                self._logger.error(new_state.error)
+            else:
+                self._logger.error(new_state.error())
             await asyncio.sleep(interval_millis / 1000)  # to seconds
 
     async def _poll_tracker(self):
