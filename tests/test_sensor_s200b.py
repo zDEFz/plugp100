@@ -20,10 +20,9 @@ class SensorT310Test(unittest.IsolatedAsyncioTestCase):
     _api = None
 
     async def asyncSetUp(self) -> None:
-        username, password, ip = await get_test_config(device_type="hub")
-        self._api = TapoClient(username, password)
-        self._hub = HubDevice(self._api, ip)
-        await self._hub.login()
+        credential, ip = await get_test_config(device_type="hub")
+        self._api = TapoClient(credential, ip)
+        self._hub = HubDevice(self._api)
         self._device = S200ButtonDevice(
             self._hub,
             (await self._hub.get_children()).get_or_raise().find_device("S200B").pop(),
