@@ -8,7 +8,7 @@ from typing import Optional
 from scapy.layers.l2 import Ether, ARP
 from scapy.sendrecv import srp
 
-from plugp100.common.functional.tri import Try
+from plugp100.common.functional.tri import Try, Failure
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ class LocalDeviceFinder:
             return Try.of(None)
         except Exception as e:
             logger.warning(f"Failed to scan network {network}", e)
-            return Try.of(e)
+            return Failure(e)
 
     # async def get_subnets(self) -> list[str]:
     #     subnets = []
