@@ -28,23 +28,11 @@ class EventSubscriptionOptions:
 class S200ButtonDevice:
     _DEFAULT_POLLING_PAGE_SIZE = 5
 
-    def __init__(
-        self,
-        hub: HubDevice,
-        device_id: str,
-        event_subscription_options: EventSubscriptionOptions,
-    ):
+    def __init__(self, hub: HubDevice, device_id: str):
         self._hub = hub
         self._device_id = device_id
         self._logger = logging.getLogger(f"ButtonDevice[${device_id}]")
-        self._poll_tracker = PollTracker(
-            state_provider=self._poll_event_logs,
-            state_tracker=_EventLogsStateTracker(
-                event_subscription_options.debounce_millis, logger=self._logger
-            ),
-            interval_millis=event_subscription_options.polling_interval_millis,
-            logger=self._logger,
-        )
+        self._poll_tracker: Optional[PollTracker] = None
 
     async def get_device_info(self) -> Try[S200BDeviceState]:
         """
@@ -76,8 +64,19 @@ class S200ButtonDevice:
         )
 
     def subscribe_event_logs(
-        self, callback: Callable[[S200BEvent], Any]
+        self,
+        callback: Callable[[S200BEvent], Any],
+        event_subscription_options: EventSubscriptionOptions,
     ) -> PollSubscription:
+        if self._poll_tracker is None:
+            self._poll_tracker = PollTracker(
+                state_provider=self._poll_event_logs,
+                state_tracker=_EventLogsStateTracker(
+                    event_subscription_options.debounce_millis, logger=self._logger
+                ),
+                interval_millis=event_subscription_options.polling_interval_millis,
+                logger=self._logger,
+            )
         return self._poll_tracker.subscribe(callback)
 
     async def _poll_event_logs(
