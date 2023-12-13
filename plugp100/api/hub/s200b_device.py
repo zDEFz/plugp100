@@ -9,6 +9,7 @@ from plugp100.common.poll_tracker import PollTracker, PollSubscription
 from plugp100.common.state_tracker import StateTracker
 from plugp100.requests.tapo_request import TapoRequest
 from plugp100.requests.trigger_logs_params import GetTriggerLogsParams
+from plugp100.responses.components import Components
 from plugp100.responses.hub_childs.s200b_device_state import (
     S200BDeviceState,
     S200BEvent,
@@ -84,6 +85,13 @@ class S200ButtonDevice:
     ):
         response = await self.get_event_logs(self._DEFAULT_POLLING_PAGE_SIZE, 0)
         return response.get_or_else(TriggerLogResponse(0, 0, []))
+
+    async def get_component_negotiation(self) -> Try[Components]:
+        return (
+            await self._hub.control_child(
+                self._device_id, TapoRequest.component_negotiation()
+            )
+        ).map(Components.try_from_json)
 
 
 class _EventLogsStateTracker(StateTracker[TriggerLogResponse[S200BEvent], S200BEvent]):

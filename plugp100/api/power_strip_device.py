@@ -5,6 +5,7 @@ from plugp100.common.utils.json_utils import dataclass_encode_json
 from plugp100.requests.set_device_info.set_plug_info_params import SetPlugInfoParams
 from plugp100.requests.tapo_request import TapoRequest
 from plugp100.responses.child_device_list import PowerStripChild
+from plugp100.responses.components import Components
 from plugp100.responses.device_state import PlugDeviceState
 
 
@@ -44,3 +45,10 @@ class PowerStripDevice(_BaseTapoDevice):
 
     async def _control_child(self, device_id: str, request: TapoRequest) -> Try[Json]:
         return await self._api.control_child(device_id, request)
+
+    async def get_component_negotiation_child(self, child_device_id) -> Try[Components]:
+        return (
+            await self._control_child(
+                child_device_id, TapoRequest.component_negotiation()
+            )
+        ).map(Components.try_from_json)

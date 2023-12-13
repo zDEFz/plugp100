@@ -64,3 +64,10 @@ class SensorT310Test(unittest.IsolatedAsyncioTestCase):
         unsub = self._device.subscribe_event_logs(lambda event: print(event))
         await asyncio.sleep(60)
         unsub()
+
+    async def test_has_components(self):
+        state = (await self._device.get_component_negotiation()).get_or_raise()
+        self.assertTrue(len(state.as_list()) > 0)
+        self.assertTrue(state.has("trigger_log"))
+        self.assertTrue(state.has("battery_detect"))
+        self.assertTrue(state.has("double_click"))

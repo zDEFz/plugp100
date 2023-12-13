@@ -54,3 +54,17 @@ class PowerStripTest(unittest.IsolatedAsyncioTestCase):
             self.assertIsNot(socket.nickname, "")
             self.assertIsNotNone(socket.device_id)
             self.assertIsNotNone(socket.original_device_id)
+
+    async def test_has_components(self):
+        state = (await self._device.get_component_negotiation()).get_or_raise()
+        self.assertTrue(len(state.as_list()) > 0)
+        self.assertTrue(state.has("control_child"))
+        self.assertTrue(state.has("child_device"))
+
+    async def test_children_has_components(self):
+        children = (await self._device.get_children()).get_or_raise()
+        for socket_id, _ in children.items():
+            state = (
+                await self._device.get_component_negotiation_child(socket_id)
+            ).get_or_raise()
+            self.assertTrue(len(state.as_list()) > 0)

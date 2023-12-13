@@ -3,6 +3,7 @@ from plugp100.api.hub.hub_device import HubDevice
 from plugp100.common.functional.tri import Try
 from plugp100.requests.tapo_request import TapoRequest
 from plugp100.requests.trigger_logs_params import GetTriggerLogsParams
+from plugp100.responses.components import Components
 from plugp100.responses.hub_childs.t100_device_state import parse_t100_event
 from plugp100.responses.hub_childs.t110_device_state import (
     T110SmartDoorState,
@@ -33,3 +34,10 @@ class T110SmartDoor:
         return response.flat_map(
             lambda x: TriggerLogResponse[T110Event].try_from_json(x, parse_t100_event)
         )
+
+    async def get_component_negotiation(self) -> Try[Components]:
+        return (
+            await self._hub.control_child(
+                self._device_id, TapoRequest.component_negotiation()
+            )
+        ).map(Components.try_from_json)

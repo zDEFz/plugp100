@@ -14,6 +14,7 @@ from plugp100.protocol.passthrough_protocol import PassthroughProtocol
 from plugp100.protocol.tapo_protocol import TapoProtocol
 from plugp100.requests.tapo_request import TapoRequest, MultipleRequestParams
 from plugp100.responses.child_device_list import ChildDeviceList
+from plugp100.responses.components import Components
 from plugp100.responses.energy_info import EnergyInfo
 from plugp100.responses.power_info import PowerInfo
 from plugp100.responses.tapo_exception import TapoException
@@ -78,9 +79,9 @@ class TapoClient:
         ), "You must initialize client before send requests"
         return (await self._protocol.send_request(request)).map(lambda x: x.result)
 
-    async def get_component_negotiation(self) -> Try[Json]:
-        return await self.execute_raw_request(
-            TapoRequest(method="component_nego", params=None)
+    async def get_component_negotiation(self) -> Try[Components]:
+        return (await self.execute_raw_request(TapoRequest.component_negotiation())).map(
+            Components.try_from_json
         )
 
     async def get_device_info(self) -> Try[Json]:
@@ -93,9 +94,7 @@ class TapoClient:
             self._protocol is not None
         ), "You must initialize client before send requests"
         get_info_request = TapoRequest.get_device_info()
-        return (await self._protocol.send_request(get_info_request)).map(
-            lambda x: x.result
-        )
+        return await self.execute_raw_request(get_info_request)
 
     async def get_energy_usage(self) -> Try[EnergyInfo]:
         """
@@ -107,8 +106,8 @@ class TapoClient:
             self._protocol is not None
         ), "You must initialize client before send requests"
         get_energy_request = TapoRequest.get_energy_usage()
-        response = await self._protocol.send_request(get_energy_request)
-        return response.map(lambda x: EnergyInfo(x.result))
+        response = await self.execute_raw_request(get_energy_request)
+        return response.map(EnergyInfo)
 
     async def get_current_power(self) -> Try[PowerInfo]:
         """
@@ -120,8 +119,8 @@ class TapoClient:
             self._protocol is not None
         ), "You must initialize client before send requests"
         get_current_power = TapoRequest.get_current_power()
-        response = await self._protocol.send_request(get_current_power)
-        return response.map(lambda x: PowerInfo(x.result))
+        response = await self.execute_raw_request(get_current_power)
+        return response.map(PowerInfo)
 
     async def set_device_info(self, device_info: Any) -> Try[bool]:
         """
@@ -146,7 +145,7 @@ class TapoClient:
         assert (
             self._protocol is not None
         ), "You must initialize client before send requests"
-        response = await self._protocol.send_request(
+        response = await self.execute_raw_request(
             TapoRequest.set_lighting_effect(light_effect)
         )
         return response.map(lambda _: True)
@@ -161,8 +160,8 @@ class TapoClient:
             self._protocol is not None
         ), "You must initialize client before send requests"
         request = TapoRequest.get_child_device_list(0)
-        response = (await self._protocol.send_request(request)).map(
-            lambda x: ChildDeviceList.try_from_json(**x.result)
+        response = (await self.execute_raw_request(request)).map(
+            lambda x: ChildDeviceList.try_from_json(**x)
         )
 
         if all_pages and response.is_success():
@@ -176,8 +175,8 @@ class TapoClient:
             previous_head = current_head.get()
             request = TapoRequest.get_child_device_list(previous_head.get_next_index())
             current_head = (
-                (await self._protocol.send_request(request))
-                .map(lambda x: ChildDeviceList.try_from_json(**x.result))
+                (await self.execute_raw_request(request))
+                .map(lambda x: ChildDeviceList.try_from_json(**x))
                 .map(lambda x: previous_head.merge(x))
             )
         return current_head
@@ -192,7 +191,7 @@ class TapoClient:
             self._protocol is not None
         ), "You must initialize client before send requests"
         request = TapoRequest.get_child_device_component_list()
-        return (await self._protocol.send_request(request)).map(lambda x: x.result)
+        return (await self.execute_raw_request(request)).map(lambda x: x)
 
     async def control_child(self, child_id: str, request: TapoRequest) -> Try[Json]:
         """
@@ -233,7 +232,7 @@ class TapoClient:
         assert (
             self._protocol is not None
         ), "You must initialize client before send requests"
-        response = await self._protocol.send_request(
+        response = await self.execute_raw_request(
             TapoRequest.set_device_info(device_info)
         )
         return response.map(lambda _: True)
@@ -244,9 +243,7 @@ class TapoClient:
             url=self._url,
             http_session=self._http_session,
         )
-        response = await self.execute_raw_request(
-            TapoRequest(method="component_nego", params=None)
-        )
+        response = await self.get_component_negotiation()
         if response.is_failure():
             error = response.error()
             if isinstance(error, TapoException) and error.error_code == 1003:
