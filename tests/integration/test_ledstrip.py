@@ -75,3 +75,11 @@ class LedStripTest(unittest.IsolatedAsyncioTestCase):
         state = (await self._device.get_state()).get_or_raise()
         self.assertEqual(40, state.brightness)
         self.assertEqual(LightEffect.aurora().name, state.lighting_effect.name)
+
+    async def test_has_components(self):
+        state = (await self._device.get_component_negotiation()).get_or_raise()
+        self.assertTrue(len(state.as_list()) > 0)
+        self.assertTrue(state.has("brightness"))
+        self.assertTrue(state.has("color"))
+        self.assertTrue(state.has("color_temperature"))
+        self.assertTrue(state.has("light_strip_lighting_effect"))

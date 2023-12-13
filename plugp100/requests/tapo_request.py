@@ -81,6 +81,10 @@ class TapoRequest(object):
     def get_temperature_humidity_records() -> "TapoRequest":
         return TapoRequest(method="get_temp_humidity_records", params=None)
 
+    @staticmethod
+    def component_negotiation() -> "TapoRequest":
+        return TapoRequest(method="component_nego", params=None)
+
     def __init__(self, method: str, params):
         self.method = method
         self.params = params
@@ -102,6 +106,12 @@ class TapoRequest(object):
 
     def get_method(self):
         return self.method
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, TapoRequest):
+            return False
+
+        return self.method == other.method and self.params == other.params
 
 
 # moved here to avoid circular import in python

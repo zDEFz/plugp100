@@ -61,3 +61,18 @@ class HubTest(unittest.IsolatedAsyncioTestCase):
         unsub = self._device.subscribe_device_association(lambda x: print(x))
         await asyncio.sleep(10)
         unsub()
+
+    async def test_has_components(self):
+        state = (await self._device.get_component_negotiation()).get_or_raise()
+        self.assertTrue(len(state.as_list()) > 0)
+        self.assertTrue(state.has("child_device"))
+        self.assertTrue(state.has("control_child"))
+        self.assertTrue(state.has("alarm"))
+
+    async def test_children_has_components(self):
+        children = (await self._device.get_children()).get_or_raise()
+        for child in children.get_children_base_info():
+            state = (
+                await self._device.get_component_negotiation_child(child.device_id)
+            ).get_or_raise()
+            self.assertTrue(len(state.as_list()) > 0)

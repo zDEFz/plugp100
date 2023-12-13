@@ -38,3 +38,7 @@ class PlugTest(unittest.IsolatedAsyncioTestCase):
         await self._device.off()
         state = (await self._device.get_state()).get_or_raise()
         self.assertEqual(False, state.device_on)
+
+    async def test_has_components(self):
+        state = (await self._device.get_component_negotiation()).get_or_raise()
+        self.assertTrue(len(state.as_list()) > 0)

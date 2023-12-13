@@ -4,6 +4,7 @@ from plugp100.common.functional.tri import Try
 from plugp100.common.utils.json_utils import dataclass_encode_json
 from plugp100.requests.set_device_info.set_plug_info_params import SetPlugInfoParams
 from plugp100.requests.tapo_request import TapoRequest
+from plugp100.responses.components import Components
 from plugp100.responses.hub_childs.switch_child_device_state import SwitchChildDeviceState
 
 
@@ -38,3 +39,10 @@ class SwitchChildDevice:
         return (await self._hub.control_child(self._device_id, request)).map(
             lambda _: True
         )
+
+    async def get_component_negotiation(self) -> Try[Components]:
+        return (
+            await self._hub.control_child(
+                self._device_id, TapoRequest.component_negotiation()
+            )
+        ).map(Components.try_from_json)

@@ -55,3 +55,11 @@ class LightTest(unittest.IsolatedAsyncioTestCase):
         await self._device.set_color_temperature(2780)
         state = (await self._device.get_state()).get_or_raise()
         self.assertEqual(2780, state.color_temp)
+
+    async def test_has_components(self):
+        state = (await self._device.get_component_negotiation()).get_or_raise()
+        self.assertTrue(len(state.as_list()) > 0)
+        self.assertTrue(state.has("brightness"))
+        self.assertTrue(state.has("color"))
+        self.assertTrue(state.has("color_temperature"))
+        self.assertTrue(state.has("light_effect"))

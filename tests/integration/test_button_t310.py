@@ -51,3 +51,13 @@ class SensorT310Test(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(len(state.past24h_humidity) > 0)
         self.assertTrue(len(state.past24_temperature_exceptions) > 0)
         self.assertTrue(len(state.past24h_humidity_exceptions) > 0)
+
+    async def test_has_components(self):
+        state = (await self._device.get_component_negotiation()).get_or_raise()
+        self.assertTrue(len(state.as_list()) > 0)
+        self.assertTrue(state.has("humidity"))
+        self.assertTrue(state.has("temperature"))
+        self.assertTrue(state.has("temp_humidity_record"))
+        self.assertTrue(state.has("comfort_temperature"))
+        self.assertTrue(state.has("comfort_humidity"))
+        self.assertTrue(state.has("battery_detect"))

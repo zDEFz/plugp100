@@ -15,6 +15,7 @@ from plugp100.requests.set_device_info.play_alarm_params import PlayAlarmParams
 from plugp100.requests.tapo_request import TapoRequest
 from plugp100.responses.alarm_type_list import AlarmTypeList
 from plugp100.responses.child_device_list import ChildDeviceList
+from plugp100.responses.components import Components
 from plugp100.responses.device_state import HubDeviceState
 
 HubSubscription = Callable[[], Any]
@@ -99,3 +100,10 @@ class HubDevice(_BaseTapoDevice):
             .map(lambda x: x.get_device_ids())
             .get_or_else(set())
         )
+
+    async def get_component_negotiation_child(self, child_device_id) -> Try[Components]:
+        return (
+            await self._api.control_child(
+                child_device_id, TapoRequest.component_negotiation()
+            )
+        ).map(Components.try_from_json)

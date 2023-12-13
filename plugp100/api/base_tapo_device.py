@@ -2,6 +2,7 @@ from plugp100.api.tapo_client import TapoClient
 from plugp100.common.functional.tri import Try
 from plugp100.common.utils.json_utils import Json
 from plugp100.requests.tapo_request import TapoRequest
+from plugp100.responses.components import Components
 from plugp100.responses.device_usage_info import DeviceUsageInfo
 from plugp100.responses.time_info import TimeInfo
 
@@ -39,5 +40,5 @@ class _BaseTapoDevice:
     async def get_state_as_json(self) -> Try[Json]:
         return await self._api.get_device_info()
 
-    async def get_component_negotiation(self) -> Try[Json]:
+    async def get_component_negotiation(self) -> Try[Components]:
         return await self._api.get_component_negotiation()
