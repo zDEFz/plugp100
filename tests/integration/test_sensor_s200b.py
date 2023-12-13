@@ -3,6 +3,7 @@ import unittest
 
 from plugp100.api.hub.hub_child_device import create_hub_child_device
 from plugp100.api.hub.hub_device import HubDevice
+from plugp100.api.hub.s200b_device import EventSubscriptionOptions
 from plugp100.responses.hub_childs.s200b_device_state import (
     SingleClickEvent,
     RotationEvent,
@@ -61,7 +62,9 @@ class SensorT310Test(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(rotation_logs[0].timestamp)
 
     async def test_should_poll_button_events(self):
-        unsub = self._device.subscribe_event_logs(lambda event: print(event))
+        unsub = self._device.subscribe_event_logs(
+            lambda event: print(event), EventSubscriptionOptions(1000, 500)
+        )
         await asyncio.sleep(60)
         unsub()
 
