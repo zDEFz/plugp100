@@ -1,7 +1,7 @@
 from plugp100.api.tapo_client import TapoClient
 from plugp100.common.functional.tri import Try
 from plugp100.common.utils.json_utils import Json
-from plugp100.requests.tapo_request import TapoRequest
+from plugp100.requests import TapoRequest
 from plugp100.responses import Components, DeviceUsageInfo, TimeInfo
 
 

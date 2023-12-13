@@ -3,8 +3,7 @@ from plugp100.api.hub.hub_device import HubDevice
 
 from plugp100.common.functional.tri import Try
 from plugp100.common.utils.json_utils import dataclass_encode_json
-from plugp100.requests.set_device_info.set_trv_info_params import TRVDeviceInfoParams
-from plugp100.requests.tapo_request import TapoRequest
+from plugp100.requests import TRVDeviceInfoParams, TapoRequest
 from plugp100.responses import KE100DeviceState, Components
 
 

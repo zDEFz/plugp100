@@ -1,8 +1,7 @@
 from plugp100.api.hub.hub_device import HubDevice
 
 from plugp100.common.functional.tri import Try
-from plugp100.requests.tapo_request import TapoRequest
-from plugp100.requests.trigger_logs_params import GetTriggerLogsParams
+from plugp100.requests import TapoRequest, GetTriggerLogsParams
 from plugp100.responses import (
     T110SmartDoorState,
     T110Event,
