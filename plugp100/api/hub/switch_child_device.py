@@ -4,8 +4,7 @@ from plugp100.common.functional.tri import Try
 from plugp100.common.utils.json_utils import dataclass_encode_json
 from plugp100.requests.set_device_info.set_plug_info_params import SetPlugInfoParams
 from plugp100.requests.tapo_request import TapoRequest
-from plugp100.responses.components import Components
-from plugp100.responses.hub_childs.switch_child_device_state import SwitchChildDeviceState
+from plugp100.responses import SwitchChildDeviceState, Components
 
 
 class SwitchChildDevice:

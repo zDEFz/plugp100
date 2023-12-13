@@ -9,7 +9,7 @@ from plugp100.requests.set_device_info.set_light_info_params import (
     LightDeviceInfoParams,
 )
 from plugp100.requests.set_device_info.set_plug_info_params import SetPlugInfoParams
-from plugp100.responses.device_state import LedStripDeviceState
+from plugp100.responses import LedStripDeviceState
 
 
 class LedStripDevice(_BaseTapoDevice):

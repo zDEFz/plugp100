@@ -3,13 +3,13 @@ from plugp100.api.hub.hub_device import HubDevice
 from plugp100.common.functional.tri import Try
 from plugp100.requests.tapo_request import TapoRequest
 from plugp100.requests.trigger_logs_params import GetTriggerLogsParams
-from plugp100.responses.components import Components
-from plugp100.responses.hub_childs.t100_device_state import (
+from plugp100.responses import (
     T100MotionSensorState,
     T100Event,
+    Components,
     parse_t100_event,
+    TriggerLogResponse,
 )
-from plugp100.responses.hub_childs.trigger_log_response import TriggerLogResponse
 
 
 class T100MotionSensor:
