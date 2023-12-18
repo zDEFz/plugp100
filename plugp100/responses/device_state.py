@@ -71,15 +71,18 @@ class LedStripDeviceState(DeviceState):
     saturation: Optional[int]
     color_temp: Optional[int]
     lighting_effect: Optional[LightEffect]
+    color_temp_range: Optional[tuple[int, int]]
 
     @staticmethod
     def try_from_json(kwargs: dict[str, Any]) -> Try["LedStripDeviceState"]:
+        color_temp_range = tuple(kwargs.get("color_temp_range", []))
         return Try.of(
             lambda: LedStripDeviceState(
                 info=DeviceInfo(**kwargs),
                 device_on=kwargs.get("device_on", False),
                 brightness=kwargs.get("brightness", None),
                 hue=kwargs.get("hue", None),
+                color_temp_range=None if color_temp_range == () else color_temp_range,
                 saturation=kwargs.get("saturation", None),
                 color_temp=kwargs.get("color_temp", None),
                 lighting_effect=LightEffect(**kwargs.get("lighting_effect"))
@@ -96,7 +99,7 @@ class DeviceInfo:
     oem_id: str
     firmware_version: str
     hardware_version: str
-    ip: str
+    ip: Optional[str]
     mac: str
     nickname: str
     model: str
@@ -110,11 +113,12 @@ class DeviceInfo:
     friendly_name: str
 
     # location data
-    latitude: int
-    longitude: int
-    timezone: str
-    time_difference: int
-    language: str
+    has_set_location_info: bool
+    latitude: Optional[int]
+    longitude: Optional[int]
+    timezone: Optional[str]
+    time_difference: Optional[int]
+    language: Optional[str]
 
     is_hardware_v2: bool = property(lambda self: self.hardware_version == "2.0")
 
@@ -129,17 +133,18 @@ class DeviceInfo:
         self.model = kwargs["model"]
         self.type = kwargs["type"]
         self.overheated = kwargs.get("overheated", False)
-        self.ip = kwargs["ip"]
+        self.ip = kwargs.get("ip")
         self.ssid = base64.b64decode(kwargs["ssid"]).decode()
         self.signal_level = kwargs.get("signal_level", 0)
         self.rssi = kwargs.get("rssi", 0)
         self.friendly_name = self.model if self.nickname == "" else self.nickname
 
-        self.latitude = kwargs["latitude"]
-        self.longitude = kwargs["longitude"]
-        self.timezone = kwargs["region"]
-        self.time_difference = kwargs["time_diff"]
-        self.language = kwargs["lang"]
+        self.has_set_location_info = kwargs.get("has_set_location_info", False)
+        self.latitude = kwargs.get("latitude")
+        self.longitude = kwargs.get("longitude")
+        self.timezone = kwargs.get("region")
+        self.time_difference = kwargs.get("time_diff")
+        self.language = kwargs.get("lang")
 
     def get_semantic_firmware_version(self) -> semantic_version.Version:
         pieces = self.firmware_version.split("Build")
