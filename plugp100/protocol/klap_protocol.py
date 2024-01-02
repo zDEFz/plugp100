@@ -188,20 +188,17 @@ class KlapProtocol(TapoProtocol):
                 if kasa_setup_seed_auth_hash == server_hash:
                     self.local_auth_hash = kasa_setup_auth_hash
                     logger.debug(
-                        "Server response doesn't match our expected hash on ip %s but an authentication with kasa setup credentials matched",
-                        self._host,
+                        f"Server response doesn't match our expected hash on ip {self._host} but an authentication with kasa setup credentials matched"
                     )
                     return Try.of((remote_seed, kasa_setup_auth_hash))
                 else:
                     self._klap_session = None
                     logger.debug(
-                        "Server response doesn't match our challenge on ip %s"
-                        % self._host
+                        f"Server response doesn't match our challenge on ip {self._host}"
                     )
                     return Failure(
                         Exception(
-                            "Server response doesn't match our challenge on ip %s"
-                            % self._host
+                            f"Server response doesn't match our challenge on ip {self._host}"
                         )
                     )
 
