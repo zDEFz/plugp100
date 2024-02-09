@@ -25,6 +25,7 @@ from plugp100.discovery.arp_lookup import ArpLookup
 from plugp100.discovery.tapo_discovery import TapoDiscovery
 from plugp100.api.plug_device import PlugDevice
 from plugp100.api.tapo_client import TapoClient
+from plugp100.api.light_effect_preset import LightEffectPreset
 
 
 async def main():
