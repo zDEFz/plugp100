@@ -5,10 +5,10 @@ The purpose of this fork is to provide the library as PyPi package.
 
 # How to install
 ```bash
-python3 -m venv venv
-source venv/bin/activate
 git clone https://github.com/petretiandrea/plugp100
 cd plugp100
+python3 -m venv venv
+source venv/bin/activate
 pip3 install -r requirements-dev.txt
 ```
 Above is needed since pipx doesn't fetch the package
