@@ -16,5 +16,7 @@ pip3 -r requirements.txt
 # Available actions: 'on', 'off', 'watt', 'info', 'energy', 'childlist', or 'componentlist'
 
 # example to turn device on
+cd /home/blu/git/plugp100 || exit
+python3 -m venv venv
 python3 plugp100-helper.py <deviceip> on
 ```
