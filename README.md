@@ -10,10 +10,6 @@ python3 -m venv venv
 source venv/bin/activate
 pip3 -r requirements.txt
 ```
-
-	python3 plugp100-helper.py 192.168.178.24 on
-pip install plugp100```
-
 # How to use
 ```python
 # Usage: python plugp100helper.py <ip_address> <action>")
